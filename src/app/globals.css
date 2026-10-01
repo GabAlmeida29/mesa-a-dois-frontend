@@ -1,0 +1,166 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-bg: #0c0b0e;
+  --color-surface: #151318;
+  --color-surface-2: #1d1a21;
+  --color-border: #2a2630;
+  --color-text: #f3eee8;
+  --color-muted: #a39ca8;
+  --color-faint: #6f6876;
+  --color-accent: #f2704f;
+  --color-accent-strong: #ff8a6a;
+  --color-gold: #f2b950;
+  --color-good: #4fd18b;
+  --color-bad: #f2545b;
+
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Fraunces Variable', ui-serif, Georgia, serif;
+
+  --radius-card: 1.25rem;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  background-image:
+    radial-gradient(60rem 30rem at 85% -10%, rgb(242 112 79 / 0.1), transparent 60%),
+    radial-gradient(50rem 25rem at -10% 10%, rgb(242 185 80 / 0.06), transparent 60%);
+  background-attachment: fixed;
+}
+
+::selection {
+  background: rgb(242 112 79 / 0.35);
+}
+
+@utility card {
+  @apply border-border bg-surface/80 rounded-[var(--radius-card)] border backdrop-blur;
+}
+@utility btn {
+  @apply focus-visible:outline-accent inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+}
+@utility btn-primary {
+  @apply btn bg-accent hover:bg-accent-strong text-black;
+}
+@utility btn-ghost {
+  @apply btn border-border bg-surface-2 text-text hover:border-faint border;
+}
+@utility btn-danger {
+  @apply btn bg-bad/15 text-bad hover:bg-bad/25;
+}
+@utility input {
+  @apply border-border bg-surface-2 text-text placeholder:text-faint focus:border-accent focus:ring-accent/25 w-full rounded-xl border px-3 py-2.5 text-sm transition outline-none focus:ring-2;
+}
+
+@utility select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.5rem;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a39ca8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 1rem;
+  & option {
+    background: var(--color-surface);
+    color: var(--color-text);
+  }
+}
+
+@utility label {
+  @apply text-muted mb-1.5 block text-sm font-medium;
+}
+@utility field-error {
+  @apply text-bad mt-1 text-xs;
+}
+
+.leaflet-container.leaflet-container {
+  background: #0e0d11;
+  font-family: var(--font-sans);
+}
+.leaflet-container .leaflet-popup-content-wrapper,
+.leaflet-container .leaflet-popup-tip {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 20px 40px rgb(0 0 0 / 0.5);
+}
+.leaflet-container .leaflet-popup-content-wrapper {
+  border-radius: 1rem;
+  padding: 0;
+  overflow: hidden;
+}
+.leaflet-container .leaflet-popup-content {
+  margin: 0;
+  width: min(290px, calc(100vw - 72px)) !important;
+  font-size: inherit;
+  line-height: 1.4;
+}
+.leaflet-container .leaflet-popup-content p {
+  margin: 0;
+}
+.leaflet-container a.leaflet-popup-close-button {
+  color: var(--color-muted);
+  z-index: 1;
+  top: 10px;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+  font-size: 20px;
+}
+.leaflet-container .leaflet-bar a {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+.leaflet-container .leaflet-bar {
+  border-color: var(--color-border);
+}
+.leaflet-container .leaflet-control-attribution {
+  background: rgb(21 19 24 / 0.85);
+  color: var(--color-faint);
+}
+.leaflet-container .leaflet-control-attribution a {
+  color: var(--color-muted);
+}
+
+.mesa-pin {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: var(--color-accent);
+  border: 3px solid #0c0b0e;
+  box-shadow: 0 8px 20px rgb(242 112 79 / 0.45);
+  transition: transform 0.15s ease;
+}
+.mesa-pin:hover {
+  transform: rotate(-45deg) scale(1.1);
+}
+.mesa-pin > * {
+  transform: rotate(45deg);
+}
+.leaflet-container .mesa-pin img {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 9999px;
+  object-fit: cover;
+  background: #fff;
+}
+.mesa-pin span {
+  font-weight: 700;
+  font-size: 13px;
+  color: #0c0b0e;
+}
