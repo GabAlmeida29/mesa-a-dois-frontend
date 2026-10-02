@@ -3,20 +3,15 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import clsx from 'clsx';
-import { BarChart3, ChevronDown, LogOut, Plus, UserCog, Users } from 'lucide-react';
+import { ChevronDown, LogOut } from 'lucide-react';
 import { NAV } from '@/constants/texts';
 import type { User } from '@/lib/types';
-import { UserAvatar } from './UserAvatar';
-
-export const ADMIN_LINKS = [
-  { href: '/restaurantes/novo', label: NAV.newRestaurant, icon: Plus },
-  { href: '/admin/acessos', label: NAV.analytics, icon: BarChart3 },
-  { href: '/admin/usuarios', label: NAV.users, icon: Users },
-  { href: '/conta', label: NAV.account, icon: UserCog },
-];
+import { useMenuLinks } from './menu-links';
+import { UserAvatar } from '@/components/ui/UserAvatar';
 
 export function UserMenu({ user, onLogout }: { user: User; onLogout: () => void }) {
   const [open, setOpen] = useState(false);
+  const links = useMenuLinks();
   const menuId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -56,7 +51,7 @@ export function UserMenu({ user, onLogout }: { user: User; onLogout: () => void 
           open ? 'border-faint bg-surface-2' : 'border-border bg-surface hover:border-faint',
         )}
       >
-        <UserAvatar name={user.name} size={30} />
+        <UserAvatar name={user.name} src={user.avatarUrl} size={30} />
         <span className="font-medium">{user.name}</span>
         <ChevronDown className={clsx('text-muted size-4 transition', open && 'rotate-180')} />
       </button>
@@ -68,14 +63,14 @@ export function UserMenu({ user, onLogout }: { user: User; onLogout: () => void 
           className="border-border bg-surface absolute right-0 mt-2 w-64 overflow-hidden rounded-2xl border shadow-2xl"
         >
           <div className="border-border flex items-center gap-3 border-b px-4 py-3">
-            <UserAvatar name={user.name} size={40} />
+            <UserAvatar name={user.name} src={user.avatarUrl} size={40} />
             <div className="min-w-0">
               <p className="truncate font-medium">{user.name}</p>
               <p className="text-faint truncate text-xs">{user.email}</p>
             </div>
           </div>
           <div className="p-1.5">
-            {ADMIN_LINKS.map(({ href, label, icon: Icon }) => (
+            {links.map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}

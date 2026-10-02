@@ -1,9 +1,11 @@
 # Mesa a Dois — Web
 
-Front-end do **Mesa a Dois**, o diário gastronômico de Gabriel e Milena. Ele mostra os restaurantes visitados num mapa interativo (tema claro ou escuro), em grade com busca e filtros e em páginas de detalhe com notas por critério e pratos. Também traz a área administrativa para cadastrar tudo, gerenciar usuários e acompanhar os acessos ao site.
+Front-end do **Mesa a Dois**, o diário gastronômico de Gabriel e Milena. Ele mostra os restaurantes visitados num mapa interativo (tema claro ou escuro), em grade com busca e filtros e em páginas de detalhe com notas por critério e pratos. Também traz a área administrativa para cadastrar tudo, gerenciar usuários e permissões, editar o próprio perfil e acompanhar os acessos ao site.
 
 - **Visitantes** só visualizam.
-- **Usuários logados** (todos administradores) entram com senha + código 2FA e passam a ver as ações de criar, editar e excluir, além de "Minha conta", "Usuários" e "Acessos".
+- **Usuários logados** entram com senha + código 2FA. Cada um vê só as ações que pode usar:
+  - **administradores** fazem tudo, inclusive gerenciar usuários;
+  - **membros** veem apenas o que foi liberado para eles (cadastrar, editar ou excluir restaurantes, gerenciar pratos, ver acessos), além de "Minha conta".
 
 ---
 
@@ -14,18 +16,20 @@ Front-end do **Mesa a Dois**, o diário gastronômico de Gabriel e Milena. Ele m
 3. [Estrutura de pastas](#estrutura-de-pastas)
 4. [Como o front conversa com a API](#como-o-front-conversa-com-a-api)
 5. [Autenticação no front](#autenticação-no-front)
-6. [Área administrativa](#área-administrativa)
-7. [Mapa](#mapa)
-8. [Cadastro de restaurante](#cadastro-de-restaurante)
-9. [Busca, filtros e ordenação](#busca-filtros-e-ordenação)
-10. [Analytics](#analytics)
-11. [Design system](#design-system)
-12. [Textos e personalização](#textos-e-personalização)
-13. [Segurança (headers e CSP)](#segurança-headers-e-csp)
-14. [Variáveis de ambiente](#variáveis-de-ambiente)
-15. [Rodando localmente](#rodando-localmente)
-16. [Scripts](#scripts)
-17. [Build e Docker](#build-e-docker)
+6. [Papéis e permissões](#papéis-e-permissões)
+7. [Área administrativa](#área-administrativa)
+8. [Mapa](#mapa)
+9. [Cadastro de restaurante](#cadastro-de-restaurante)
+10. [Upload e recorte de imagens](#upload-e-recorte-de-imagens)
+11. [Busca, filtros e ordenação](#busca-filtros-e-ordenação)
+12. [Analytics](#analytics)
+13. [Design system](#design-system)
+14. [Textos e personalização](#textos-e-personalização)
+15. [Segurança (headers e CSP)](#segurança-headers-e-csp)
+16. [Variáveis de ambiente](#variáveis-de-ambiente)
+17. [Rodando localmente](#rodando-localmente)
+18. [Scripts](#scripts)
+19. [Build e Docker](#build-e-docker)
 
 ---
 
@@ -36,6 +40,7 @@ Front-end do **Mesa a Dois**, o diário gastronômico de Gabriel e Milena. Ele m
 | Framework     | Next.js 15 (App Router) · React 19 · TypeScript                                                                    |
 | Estilo        | Tailwind CSS 4 (tokens em `@theme`, utilitários próprios com `@utility`)                                           |
 | Formulários   | React Hook Form + Zod                                                                                              |
+| Imagens       | react-easy-crop (recorte quadrado com arraste e zoom antes do upload)                                              |
 | Mapa          | Leaflet + React-Leaflet, com o mapa base **vetorial** desenhado pelo MapLibre GL (`@maplibre/maplibre-gl-leaflet`) |
 | Dados do mapa | OpenFreeMap (tiles vetoriais, gratuito, sem chave): estilo `dark` no tema escuro e `positron` no claro             |
 | Endereços     | Photon (OpenStreetMap): autocomplete e busca reversa, sem chave                                                    |
@@ -47,21 +52,23 @@ Front-end do **Mesa a Dois**, o diário gastronômico de Gabriel e Milena. Ele m
 
 ## Páginas
 
-| Rota                        | Acesso  | O que faz                                                                                                                                                                                                       |
-| --------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`                         | público | Mapa com um pin por restaurante (com a foto/logo) e estatísticas: total de restaurantes, pratos, cidades e nota média. O popup mostra foto, categoria, cidade, faixa de preço, data, nota e link para o detalhe |
-| `/restaurantes`             | público | Grade de cards com busca, **filtros** e ordenação. Logado, cada card ganha editar/excluir                                                                                                                       |
-| `/restaurantes/[id]`        | público | Foto em destaque, nota geral com uma barra por critério (`RatingSummary`), "voltaríamos?", opinião, pratos (foto, preço, notas) e mini-mapa com link para o Google Maps (busca pelo endereço)                   |
-| `/restaurantes/novo`        | admin   | Cadastro de restaurante                                                                                                                                                                                         |
-| `/restaurantes/[id]/editar` | admin   | Edição                                                                                                                                                                                                          |
-| `/login`                    | público | Login em duas etapas: e-mail + senha, depois o código do app autenticador. Conta sem 2FA vê o QR code para ativar ali mesmo                                                                                     |
-| `/sobre`                    | público | Apresentação do casal, com fotos, botão do Instagram de cada um (`@gabalmeid29`, `@mih_denardi`) e como eles avaliam                                                                                            |
-| `/privacidade`              | público | Privacidade e termos de uso (LGPD): natureza das avaliações, dados coletados, analytics sem cookies e contato                                                                                                   |
-| `/conta`                    | admin   | Minha conta: perfil (nome), trocar senha, reconfigurar o 2FA com QR code (troca de celular) e sair dos outros dispositivos                                                                                      |
-| `/admin/usuarios`           | admin   | Gestão de usuários: listar, criar (com gerador de senha forte), editar, redefinir senha, resetar 2FA, desbloquear e excluir                                                                                     |
-| `/admin/acessos`            | admin   | Painel de acessos do site (ver [Analytics](#analytics))                                                                                                                                                         |
+| Rota                        | Acesso               | O que faz                                                                                                                                                                                                       |
+| --------------------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                         | público              | Mapa com um pin por restaurante (com a foto/logo) e estatísticas: total de restaurantes, pratos, cidades e nota média. O popup mostra foto, categoria, cidade, faixa de preço, data, nota e link para o detalhe |
+| `/restaurantes`             | público              | Grade de cards com busca, **filtros** e ordenação. Com permissão, cada card ganha editar/excluir                                                                                                                |
+| `/restaurantes/[id]`        | público              | Foto em destaque, nota geral com uma barra por critério (`RatingSummary`), "voltaríamos?", opinião, pratos (foto, preço, notas) e mini-mapa com link para o Google Maps (busca pelo endereço)                   |
+| `/restaurantes/novo`        | `restaurants:create` | Cadastro de restaurante                                                                                                                                                                                         |
+| `/restaurantes/[id]/editar` | `restaurants:update` | Edição                                                                                                                                                                                                          |
+| `/login`                    | público              | Login em duas etapas: e-mail + senha, depois o código do app autenticador. Conta sem 2FA vê o QR code para ativar ali mesmo                                                                                     |
+| `/sobre`                    | público              | Logo completo, apresentação de quem está por trás do site (perfis carregados de `GET /api/team`, com foto, frase, bio e Instagram) e como avaliamos                                                             |
+| `/privacidade`              | público              | Privacidade e termos de uso (LGPD), em linguagem simples: natureza das avaliações, estatísticas anônimas de acesso, serviços de terceiros, fotos, direitos e contato (perfis de `GET /api/team`)                |
+| `/conta`                    | logado               | Minha conta: perfil (foto, nome, frase, bio, Instagram, "mostrar no Sobre nós"), trocar senha, reconfigurar o 2FA com QR code (troca de celular) e sair dos outros dispositivos                                 |
+| `/admin/usuarios`           | administrador        | Gestão de usuários e acessos: listar, criar (com gerador de senha forte), editar, definir papel e permissões, redefinir senha, resetar 2FA, desbloquear e excluir                                               |
+| `/admin/acessos`            | `analytics:view`     | Painel de acessos do site (ver [Analytics](#analytics))                                                                                                                                                         |
 
-As páginas de admin ficam dentro do `AdminGuard`, que redireciona para `/login` quando não há sessão. Mesmo assim, **quem protege de fato é a API**: toda escrita exige sessão válida.
+As páginas restritas ficam dentro do `RequireAuth` (ver [Papéis e permissões](#papéis-e-permissões)), que redireciona para `/login` quando não há sessão e mostra um aviso de "sem permissão" quando o usuário não pode acessar. Mesmo assim, **quem protege de fato é a API**: toda escrita exige sessão válida e a permissão correspondente.
+
+A aba do navegador mostra sempre "Mesa a Dois", em todas as páginas.
 
 O rodapé de todas as páginas traz o aviso de que as avaliações são **opiniões pessoais** e o link "Privacidade e termos".
 
@@ -71,10 +78,11 @@ O rodapé de todas as páginas traz o aviso de que as avaliações são **opini�
 
 ```
 web/
-├── public/about/                 # fotos do "Sobre nós"
+├── public/brand/                 # logo: emblem.webp, wordmark.webp e logo.webp (completo)
 ├── src/
 │   ├── app/                      # rotas (App Router)
-│   │   ├── layout.tsx            # fontes, script de tema, providers (Theme/Auth/Toast), header, footer e tracker
+│   │   ├── layout.tsx            # fontes, título fixo, script de tema, providers (Theme/Auth/Toast), header, footer e tracker
+│   │   ├── icon.png · apple-icon.png # favicon e ícone da tela inicial (selo creme com o emblema)
 │   │   ├── globals.css           # tokens de cor (escuro e claro), utilitários (btn, card, input, select) e tema do Leaflet
 │   │   ├── page.tsx              # mapa + estatísticas
 │   │   ├── restaurantes/         # grade, detalhe, novo, editar
@@ -82,13 +90,20 @@ web/
 │   │   ├── admin/acessos/        # painel de analytics
 │   │   ├── conta/                # minha conta
 │   │   ├── login/ · sobre/ · privacidade/ · not-found.tsx
-│   ├── components/
-│   │   ├── Header.tsx · UserMenu.tsx · UserAvatar.tsx · Footer.tsx · ThemeSwitcher.tsx
-│   │   ├── RestaurantCard.tsx · RestaurantFilters.tsx · RatingBadge.tsx · RatingSummary.tsx
-│   │   ├── RestaurantForm.tsx · ScoreInput.tsx · AddressAutocomplete.tsx · ImageUpload.tsx
-│   │   ├── TwoFactorEnrollment.tsx · PasswordField.tsx · AnalyticsTracker.tsx
-│   │   ├── DishCard.tsx · DishForm.tsx
-│   │   ├── Modal.tsx · ConfirmDialog.tsx · States.tsx · AdminGuard.tsx
+│   ├── components/               # organizados por funcionalidade
+│   │   ├── account/              # seções de "Minha conta": ProfileSection, PasswordSection, TwoFactorSection, SessionsSection
+│   │   ├── analytics/            # AnalyticsTracker e o painel: Dashboard, StatCard, Panel, DailyBars, RankedBars, format, use-page-label
+│   │   ├── auth/                 # RequireAuth (guarda de páginas) e TwoFactorEnrollment
+│   │   ├── brand/Logo.tsx        # LogoLockup (header), LogoWordmark (rodapé) e LogoFull ("Sobre nós")
+│   │   ├── dish/                 # DishCard e DishForm
+│   │   ├── image/                # ImageUpload e ImageCropper (recorte quadrado antes do envio)
+│   │   ├── layout/               # Header, Footer, UserMenu, ThemeSwitcher e menu-links.ts (itens do menu por permissão)
+│   │   ├── restaurant/           # RestaurantCard, RestaurantThumbnail, RestaurantFilters, RatingBadge, RatingSummary
+│   │   ├── restaurant-form/      # RestaurantForm, schema.ts, BasicInfoSection, LocationSection, RatingsSection,
+│   │   │                         # WouldReturnField, ScoreInput e AddressAutocomplete
+│   │   ├── team/                 # TeamCards ("Sobre nós"), TeamContacts (privacidade) e InstagramLink
+│   │   ├── ui/                   # Modal, ConfirmDialog, States, PasswordField, UserAvatar, Badge, IconButton, Section
+│   │   ├── users/                # gestão de usuários: UserRow, AccessEditor, UserActionForm e user-actions.ts
 │   │   └── map/
 │   │       ├── index.ts           # carrega os mapas só no cliente (next/dynamic, ssr: false)
 │   │       ├── RestaurantMap.tsx  # mapa público com pins e popups
@@ -105,6 +120,9 @@ web/
 │       ├── api.ts                # cliente HTTP da API
 │       ├── analytics.ts          # envio de eventos e rótulo dos cliques
 │       ├── theme.ts              # tipos, cores e script inline do tema
+│       ├── permissions.ts        # lista de permissões, isAdminUser e can(user, permissão)
+│       ├── crop-image.ts         # recorta a imagem no canvas e detecta formatos que o navegador não abre
+│       ├── use-team.ts           # carrega os perfis públicos (GET /api/team)
 │       ├── password.ts           # gerador de senha forte
 │       ├── geocode.ts            # autocomplete e busca reversa (Photon)
 │       ├── filters.ts            # filtros da grade (aplicação e sincronização com a URL)
@@ -142,35 +160,56 @@ O `lib/api.ts` centraliza as chamadas:
 ## Autenticação no front
 
 - **Sem token no JavaScript**: a sessão vive num cookie `httpOnly` que o código do site nem consegue ler. Nada da sessão é guardado em `localStorage` (lá fica só a preferência de tema).
-- Ao carregar, o `AuthContext` chama `GET /api/auth/me` para saber se há sessão. `isAdmin` libera os botões de ação.
+- Ao carregar, o `AuthContext` chama `GET /api/auth/me` para saber se há sessão e guarda o perfil, com papel e permissões efetivas. Ele expõe `isAdmin`, `can(permissão)` e `refresh()` (recarrega o perfil depois do login, da ativação do 2FA ou de uma edição em "Minha conta").
 - **Fluxo do login** (`/login`):
   1. o usuário envia e-mail e senha;
   2. se a API responder `mfaRequired`, a tela pede o código de 6 dígitos (com `autocomplete="one-time-code"`);
   3. se responder `mfaSetupRequired`, a tela mostra a ativação do 2FA (`TwoFactorEnrollment`): QR code, chave manual com botão de copiar e o campo do código. O código é enviado para `POST /api/auth/2fa/enroll`, que já cria a sessão;
   4. se responder `429`, mostra o aviso de bloqueio temporário.
-- **Menu do usuário**: o avatar com o nome abre um popover com "Novo restaurante", "Acessos", "Usuários", "Minha conta" e "Sair". Ele fecha com clique fora ou `Esc`. No celular, as mesmas opções aparecem no menu hambúrguer.
-- O avatar usa a foto do "Sobre nós" quando o nome bate (Gabriel/Milena). Caso contrário, mostra a inicial.
+- **Menu do usuário**: o avatar com o nome abre um popover com "Novo restaurante", "Acessos", "Usuários", "Minha conta" e "Sair", mostrando só os itens que o usuário pode usar (`components/layout/menu-links.ts`). Ele fecha com clique fora ou `Esc`. No celular, as mesmas opções aparecem no menu hambúrguer.
+- O avatar usa a foto do perfil (`avatarUrl`). Sem foto, mostra a inicial do nome.
+
+---
+
+## Papéis e permissões
+
+O front espelha as regras da API para esconder o que o usuário não pode usar. A lista fica em `lib/permissions.ts`:
+
+| Permissão            | Libera no site                                |
+| -------------------- | --------------------------------------------- |
+| `restaurants:create` | "Novo restaurante" e `/restaurantes/novo`     |
+| `restaurants:update` | botão de editar e `/restaurantes/[id]/editar` |
+| `restaurants:delete` | botão de excluir restaurante                  |
+| `dishes:manage`      | adicionar, editar e excluir pratos            |
+| `analytics:view`     | "Acessos" e `/admin/acessos`                  |
+
+- **Administrador** tem todas as permissões e é o único que vê "Usuários" (`/admin/usuarios`).
+- **Membro** tem só as permissões marcadas para ele. "Minha conta" fica disponível para todos.
+- `useAuth()` traz `isAdmin` e `can(permissão)`; menus e botões usam isso para se esconder.
+- Páginas restritas usam `<RequireAuth permission="...">` ou `<RequireAuth adminOnly>` (`components/auth/RequireAuth.tsx`): sem sessão, redireciona para `/login`; sem permissão, mostra o estado "sem permissão" (`COMMON.forbidden`).
+
+Esconder no front é só conforto: a API recusa com `403` qualquer ação sem a permissão.
 
 ---
 
 ## Área administrativa
 
-Todas as páginas ficam dentro do `AdminGuard`. Ações sensíveis (criar usuário, trocar senha, resetar 2FA, excluir, reconfigurar o próprio 2FA) pedem a **senha atual** no formulário ou no modal. Quem valida de fato é a API, e senha errada conta para o bloqueio da conta.
+As páginas ficam dentro do `RequireAuth`. Ações sensíveis (criar usuário, trocar senha, resetar 2FA, excluir, reconfigurar o próprio 2FA) pedem a **senha atual** no formulário ou no modal. Quem valida de fato é a API, e senha errada conta para o bloqueio da conta.
 
-**Minha conta** (`/conta`)
+**Minha conta** (`/conta`), dividida em seções em `components/account/`
 
-- perfil: altera o próprio nome (`PUT /api/auth/me`);
-- trocar senha: nova senha + senha atual. A sessão atual continua, as outras são encerradas;
-- reconfigurar 2FA: pede a senha atual, mostra um QR code novo e confirma com o código do app (útil para trocar de celular);
-- sair dos outros dispositivos (`POST /api/auth/logout-others`).
+- perfil (`ProfileSection`): foto com recorte **circular**, nome, frase de apresentação, "sobre você", Instagram e a opção "Mostrar meu perfil na página Sobre nós" (`PUT /api/auth/me`). A foto aparece no menu e no "Sobre nós";
+- trocar senha (`PasswordSection`): nova senha + senha atual. A sessão atual continua, as outras são encerradas;
+- reconfigurar 2FA (`TwoFactorSection`): pede a senha atual, mostra um QR code novo e confirma com o código do app (útil para trocar de celular);
+- sair dos outros dispositivos (`SessionsSection`, `POST /api/auth/logout-others`).
 
-**Usuários** (`/admin/usuarios`)
+**Usuários** (`/admin/usuarios`, só administradores), com componentes em `components/users/`
 
-- lista com status do 2FA, bloqueio e último login;
-- criar usuário, com **gerador de senha forte** (`PasswordField` + `lib/password.ts`, usando `crypto.getRandomValues`);
-- editar nome e e-mail;
+- lista (`UserRow`) com foto, selo do papel (Administrador ou Membro), selos das permissões, status do 2FA, bloqueio e último login;
+- criar usuário, com **gerador de senha forte** (`PasswordField` + `lib/password.ts`, usando `crypto.getRandomValues`) e já definindo o acesso;
+- editar nome, e-mail e acesso. O `AccessEditor` escolhe entre **Administrador** (acesso total) e **Membro**, com uma caixa de seleção por permissão;
 - redefinir senha, resetar 2FA (o usuário ativa de novo no próximo login), desbloquear e excluir;
-- não dá para excluir a si mesmo nem o último usuário.
+- ninguém altera o próprio acesso nem exclui a si mesmo, e sempre precisa restar ao menos um administrador.
 
 As senhas seguem a política da API: 12+ caracteres, 3 tipos entre minúsculas, maiúsculas, números e símbolos, e nenhum termo óbvio.
 
@@ -200,18 +239,18 @@ Para trocar o visual, edite as cores em `PALETTES` (`map-style.ts`) ou aponte `N
 
 ## Cadastro de restaurante
 
-O formulário (`RestaurantForm.tsx`) tem três blocos.
+O formulário fica em `components/restaurant-form/`. O `RestaurantForm.tsx` monta o React Hook Form, compartilha o estado com as seções por `FormProvider` e envia os dados. O schema Zod e a conversão de/para a API ficam em `schema.ts`. São três blocos, cada um num componente.
 
-**1. Informações básicas**
+**1. Informações básicas** (`BasicInfoSection`)
 
-- foto/logo em upload quadrado (`ImageUpload`), enviada para `/api/uploads` e convertida em WebP pela API;
+- foto/logo com recorte quadrado (`ImageUpload`, ver [Upload e recorte de imagens](#upload-e-recorte-de-imagens)), enviada para `/api/uploads` e convertida em WebP pela API;
 - nome;
 - **categoria**: select com a lista fixa `CUISINES`, para evitar variações de digitação;
 - faixa de preço;
 - data da visita;
 - descrição curta.
 
-**2. Localização**, com um campo único de endereço (`AddressAutocomplete`):
+**2. Localização** (`LocationSection`), com um campo único de endereço (`AddressAutocomplete`):
 
 - sugestões **enquanto digita**, com debounce de 350 ms, priorizando lugares perto do mapa atual;
 - teclado: `↑`/`↓` navega, `Enter` escolhe, `Esc` fecha (combobox acessível);
@@ -220,7 +259,7 @@ O formulário (`RestaurantForm.tsx`) tem três blocos.
 - clicar no mapa, arrastar o pin ou usar o GPS dispara a **busca reversa**, que descobre a cidade (e o endereço, se vazio);
 - a cidade aparece como "Cidade: X" com a opção **corrigir**.
 
-**3. Avaliação**
+**3. Avaliação** (`RatingsSection`)
 
 - 7 critérios com um slider cada (`ScoreInput`), de 0 a 10 em passos de 0,5:
 
@@ -237,11 +276,25 @@ O formulário (`RestaurantForm.tsx`) tem três blocos.
 - todo critério começa **sem nota** e pode voltar a ficar vazio ("limpar"). Critérios vazios não entram na média;
 - a **nota geral prevista** (média dos critérios preenchidos) aparece ao vivo enquanto os sliders mudam;
 - opinião;
-- "voltaríamos".
+- **"Voltaríamos a esse lugar?"** (`WouldReturnField`): a pergunta em destaque, com dois cartões de opção ("Sim, voltaríamos" e "Não voltaríamos"), cada um com uma frase curta.
 
 A validação usa **Zod no front** (feedback imediato) e é repetida **na API** (a que vale de verdade).
 
-Os pratos são criados e editados num modal (`DishForm`) na página do restaurante e continuam com a nota do Gabriel e da Milena.
+Os pratos são criados e editados num modal (`DishForm`) na página do restaurante, com foto **quadrada** recortada no envio, e continuam com a nota do Gabriel e da Milena. Os botões de prato só aparecem com a permissão `dishes:manage`.
+
+---
+
+## Upload e recorte de imagens
+
+Todo envio de imagem passa pelo `ImageUpload` (`components/image/`): foto do restaurante, foto do prato e foto do perfil.
+
+1. O usuário escolhe o arquivo.
+2. O `ImageCropper` abre um recorte **quadrado** (`react-easy-crop`): arrastar posiciona a imagem e o controle de zoom aproxima. Na foto do perfil, a máscara é **circular**.
+3. Ao aplicar, `lib/crop-image.ts` recorta no canvas (até 1600px) e o resultado vai para `POST /api/uploads?folder=logos|dishes|avatars`. A API reduz e converte para WebP.
+
+- Uma imagem já salva pode ser **reenquadrada** pelo botão "Ajustar recorte": o recorte parte da imagem atual, sem precisar escolher o arquivo de novo.
+- Formatos que o navegador não consegue abrir (como HEIC em alguns navegadores) são enviados **sem recorte**, com um aviso, e a API faz a conversão.
+- Os botões "Trocar imagem", "Ajustar recorte" e "Remover imagem" aparecem sobre a imagem ao passar o mouse ou focar com o teclado.
 
 ---
 
@@ -273,7 +326,7 @@ O `AnalyticsTracker` (montado no `layout.tsx`) envia eventos para `POST /api/ana
 - **Opt-out**: nada é enviado quando o navegador tem **Do Not Track** ou **Global Privacy Control** ligados. Elementos dentro de `[data-track-ignore]` não geram clique (o próprio painel de acessos usa isso).
 - O envio usa `keepalive` e ignora erros, então nunca atrapalha a navegação.
 
-O painel (`/admin/acessos`) mostra:
+O painel (`/admin/acessos`, permissão `analytics:view`) é montado pelo `Dashboard` e pelos blocos de `components/analytics/` (`StatCard`, `Panel`, `DailyBars`, `RankedBars`). Ele mostra:
 
 - visitantes, visualizações, cliques e páginas por visitante;
 - visitas por dia;
@@ -289,20 +342,30 @@ Filtros: período de **7, 30, 90 dias ou 12 meses** e "Incluir nossos acessos" (
 
 ## Design system
 
-- **Dois temas**: escuro "luz de vela" (padrão) e claro em tons pastel quentes. Os tokens do escuro ficam no bloco `@theme` do `globals.css`, e o claro sobrescreve os mesmos tokens em `:root[data-theme='light']`.
+- **Marca**: o logo fica em `public/brand/` (`emblem.webp`, `wordmark.webp` e `logo.webp`) e é usado pelos componentes de `components/brand/Logo.tsx`:
+  - `LogoLockup` (emblema + nome) no header;
+  - `LogoWordmark` (só o nome) no rodapé;
+  - `LogoFull` (logo completo) no topo do "Sobre nós".
 
-  | Token                          | Uso                              |
-  | ------------------------------ | -------------------------------- |
-  | `bg` / `surface` / `surface-2` | fundos em camadas                |
-  | `accent` (brasa)               | ações principais                 |
-  | `gold`                         | preços                           |
-  | `good` / `bad`                 | notas altas/baixas, sucesso/erro |
+  O favicon (`src/app/icon.png`) e o ícone da tela inicial (`src/app/apple-icon.png`) são um selo creme com o emblema. No tema escuro, as imagens da marca (`.brand-image`) recebem um leve aumento de brilho para não ficarem apagadas.
+
+- **Dois temas**: escuro "luz de vela" (padrão) e claro em tons creme quentes, com a paleta **cobre/ferrugem** tirada do logo. Os tokens do escuro ficam no bloco `@theme` do `globals.css`, e o claro sobrescreve os mesmos tokens em `:root[data-theme='light']`.
+
+  | Token                          | Uso                                         | Escuro                | Claro                 |
+  | ------------------------------ | ------------------------------------------- | --------------------- | --------------------- |
+  | `bg` / `surface` / `surface-2` | fundos em camadas (`bg`)                    | `#0c0b0e`             | `#f7f0e7`             |
+  | `accent`                       | ações principais (cobre)                    | `#d9773e`             | `#a8522a`             |
+  | `accent-strong`                | hover das ações principais                  | `#ea9157`             | `#8f4321`             |
+  | `on-accent`                    | texto sobre botões e selos com fundo accent | `#1a100a`             | `#fff8f1`             |
+  | `gold`                         | preços                                      | `#e3a24f`             | `#b9772b`             |
+  | `good` / `bad`                 | notas altas/baixas, sucesso/erro            | `#4fd18b` / `#f2545b` | `#3b8f63` / `#c44a4f` |
 
 - **Troca de tema** (`ThemeSwitcher`, no header e no menu do celular): Sistema, Claro ou Escuro.
   - a preferência fica em `localStorage` (`mesa-theme`); "Sistema" segue o `prefers-color-scheme` e acompanha mudanças ao vivo;
   - um script inline em `lib/theme.ts` roda antes da página pintar e aplica `data-theme` no `<html>`, evitando o "flash" do tema errado;
   - o `ThemeContext` também atualiza o `theme-color` do navegador.
-- **Utilitários** (`@utility`): `card`, `btn-primary`, `btn-ghost`, `btn-danger`, `input`, `select` (seta própria, sem visual nativo), `label`, `field-error`.
+- **Utilitários** (`@utility`): `card`, `btn-primary` (texto em `on-accent`), `btn-ghost`, `btn-danger`, `input`, `select` (seta própria, sem visual nativo), `label`, `field-error`.
+- **Componentes de base** em `components/ui/`: `Modal`, `ConfirmDialog`, `States` (carregando, vazio, erro), `Badge`, `IconButton`, `Section`, `PasswordField` e `UserAvatar`.
 - **Tipografia**: Fraunces nos títulos, Inter no texto.
 - **Responsivo**: a grade vai de 1 a 4 colunas, o menu vira hambúrguer no celular e os mapas ajustam a altura.
 - **Acessibilidade**:
@@ -315,18 +378,22 @@ Filtros: período de **7, 30, 90 dias ou 12 meses** e "Incluir nossos acessos" (
 
 ## Textos e personalização
 
-| O que mudar                                                      | Onde                                                                                         |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Qualquer texto do site (títulos, botões, mensagens, "Sobre nós") | `src/constants/texts.ts`                                                                     |
-| Lista de categorias de cozinha                                   | `CUISINES` em `texts.ts`                                                                     |
-| Nomes e descrições dos critérios de avaliação                    | `CRITERIA` em `texts.ts`                                                                     |
-| Textos de conta, usuários, acessos, tema, segurança e 2FA        | `ACCOUNT`, `USERS`, `ANALYTICS`, `THEME`, `SECURITY`, `TWO_FACTOR` em `texts.ts`             |
-| Página de privacidade e termos                                   | `LEGAL` em `texts.ts`                                                                        |
-| Aviso do rodapé ("opiniões pessoais")                            | `APP.disclaimer` em `texts.ts`                                                               |
-| Fotos e Instagram do "Sobre nós"                                 | `public/about/gabriel.webp` e `milena.webp` (campos `photo` e `instagram` em `ABOUT.people`) |
-| Cores do site                                                    | `@theme` (escuro) e `:root[data-theme='light']` (claro) em `src/app/globals.css`             |
-| Cores do mapa                                                    | `PALETTES` em `src/components/map/map-style.ts`                                              |
-| Centro e zoom inicial do mapa                                    | `MAP_DEFAULT_CENTER` / `MAP_DEFAULT_ZOOM` em `src/constants/config.ts`                       |
+| O que mudar                                                      | Onde                                                                                        |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Qualquer texto do site (títulos, botões, mensagens, "Sobre nós") | `src/constants/texts.ts`                                                                    |
+| Nome do site (também o título da aba)                            | `APP.name` em `texts.ts`                                                                    |
+| Lista de categorias de cozinha                                   | `CUISINES` em `texts.ts`                                                                    |
+| Nomes e descrições dos critérios de avaliação                    | `CRITERIA` em `texts.ts`                                                                    |
+| Textos de conta, usuários, acessos, tema, segurança e 2FA        | `ACCOUNT`, `USERS`, `ANALYTICS`, `THEME`, `SECURITY`, `TWO_FACTOR` em `texts.ts`            |
+| Nomes dos papéis e das permissões                                | `ROLES` e `PERMISSION_LABELS` em `texts.ts`                                                 |
+| Textos do upload e do recorte de imagens                         | `IMAGE` em `texts.ts`                                                                       |
+| Página de privacidade e termos                                   | `LEGAL` em `texts.ts`                                                                       |
+| Aviso do rodapé ("opiniões pessoais")                            | `APP.disclaimer` em `texts.ts`                                                              |
+| Fotos, apresentação e Instagram do "Sobre nós"                   | no próprio site, em "Minha conta" de cada pessoa (salvos na API e lidos de `GET /api/team`) |
+| Logo e ícones                                                    | `public/brand/` e `src/app/icon.png` / `apple-icon.png`                                     |
+| Cores do site                                                    | `@theme` (escuro) e `:root[data-theme='light']` (claro) em `src/app/globals.css`            |
+| Cores do mapa                                                    | `PALETTES` em `src/components/map/map-style.ts`                                             |
+| Centro e zoom inicial do mapa                                    | `MAP_DEFAULT_CENTER` / `MAP_DEFAULT_ZOOM` em `src/constants/config.ts`                      |
 
 ---
 

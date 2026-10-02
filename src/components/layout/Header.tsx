@@ -4,11 +4,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import clsx from 'clsx';
-import { LogIn, LogOut, Menu, UtensilsCrossed, X } from 'lucide-react';
+import { LogIn, LogOut, Menu, X } from 'lucide-react';
 import { APP, NAV } from '@/constants/texts';
 import { useAuth } from '@/contexts/AuthContext';
-import { UserAvatar } from './UserAvatar';
-import { ADMIN_LINKS, UserMenu } from './UserMenu';
+import { UserAvatar } from '@/components/ui/UserAvatar';
+import { UserMenu } from './UserMenu';
+import { LogoLockup } from '@/components/brand/Logo';
+import { useMenuLinks } from './menu-links';
 import { ThemeSwitcher } from './ThemeSwitcher';
 
 const links = [
@@ -21,17 +23,15 @@ export function Header() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
+  const menuLinks = useMenuLinks();
 
   const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 
   return (
     <header className="border-border/70 bg-bg/80 sticky top-0 z-[1000] border-b backdrop-blur-lg">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
-          <span className="bg-accent grid size-9 place-items-center rounded-full text-black">
-            <UtensilsCrossed className="size-4" />
-          </span>
-          <span className="font-display text-xl font-semibold tracking-tight">{APP.name}</span>
+        <Link href="/" className="shrink-0" onClick={() => setOpen(false)} aria-label={APP.name}>
+          <LogoLockup />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
@@ -92,17 +92,17 @@ export function Header() {
             {user ? (
               <>
                 <div className="bg-surface mb-2 flex items-center gap-3 rounded-xl px-4 py-3">
-                  <UserAvatar name={user.name} size={40} />
+                  <UserAvatar name={user.name} src={user.avatarUrl} size={40} />
                   <div className="min-w-0">
                     <p className="truncate font-medium">{user.name}</p>
                     <p className="text-faint truncate text-xs">{user.email}</p>
                   </div>
                 </div>
-                {ADMIN_LINKS.map(({ href, label, icon: Icon }, i) => (
+                {menuLinks.map(({ href, label, icon: Icon }) => (
                   <Link
                     key={href}
                     href={href}
-                    className={i === 0 ? 'btn-primary' : 'btn-ghost'}
+                    className={href === '/restaurantes/novo' ? 'btn-primary' : 'btn-ghost'}
                     onClick={() => setOpen(false)}
                   >
                     <Icon className="size-4" /> {label}

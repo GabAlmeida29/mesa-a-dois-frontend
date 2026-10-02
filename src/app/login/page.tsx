@@ -11,7 +11,7 @@ import { LOGIN, TWO_FACTOR } from '@/constants/texts';
 import { useAuth } from '@/contexts/AuthContext';
 import { ApiError } from '@/lib/api';
 import type { Enrollment } from '@/lib/types';
-import { TwoFactorEnrollment } from '@/components/TwoFactorEnrollment';
+import { TwoFactorEnrollment } from '@/components/auth/TwoFactorEnrollment';
 import { useToast } from '@/contexts/ToastContext';
 
 const schema = z.object({

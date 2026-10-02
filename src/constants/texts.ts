@@ -1,4 +1,4 @@
-import type { ScoreKey } from '@/lib/types';
+import type { Permission, Role, ScoreKey } from '@/lib/types';
 
 export const APP = {
   name: 'Mesa a Dois',
@@ -155,6 +155,21 @@ export const CRITERIA: ReadonlyArray<{ key: ScoreKey; label: string; hint: strin
   { key: 'scoreWait', label: 'Tempo de espera', hint: '10 = rápido, sem demora' },
 ];
 
+export const IMAGE = {
+  upload: 'Enviar imagem',
+  uploading: 'Enviando…',
+  replace: 'Trocar imagem',
+  adjust: 'Ajustar recorte',
+  remove: 'Remover imagem',
+  cropTitle: 'Ajustar recorte',
+  cropHint: 'Arraste a imagem e use o zoom para escolher a parte que vai aparecer.',
+  zoom: 'Zoom',
+  apply: 'Aplicar recorte',
+  cancel: 'Cancelar',
+  noPreview: 'Este formato não abre no navegador; a imagem foi enviada sem recorte.',
+  error: 'Não foi possível enviar a imagem.',
+} as const;
+
 export const FORM = {
   newTitle: 'Novo restaurante',
   editTitle: 'Editar restaurante',
@@ -183,13 +198,18 @@ export const FORM = {
     scoreAverage: 'Nota geral prevista',
     review: 'Nossa opinião',
     reviewPlaceholder: 'Como foi a experiência? Atendimento, ambiente, o que valeu a pena…',
-    wouldReturn: 'Voltaríamos a esse lugar',
     latitude: 'Latitude',
     longitude: 'Longitude',
     dishName: 'Nome do prato',
     dishDescription: 'Descrição',
     dishPrice: 'Preço (R$)',
     dishPhoto: 'Foto do prato',
+  },
+  wouldReturn: {
+    question: 'Voltaríamos a esse lugar?',
+    hint: 'A pergunta que resume tudo: depois dessa visita, vale a pena voltar?',
+    yes: { label: 'Sim, voltaríamos', description: 'Valeu a experiência, recomendamos.' },
+    no: { label: 'Não voltaríamos', description: 'Uma vez já foi o suficiente.' },
   },
   priceLevels: ['Não informado', '$ — Econômico', '$$ — Moderado', '$$$ — Caro', '$$$$ — Especial'],
   addressLabel: 'Endereço ou nome do lugar',
@@ -204,9 +224,6 @@ export const FORM = {
   cityEdit: 'corrigir',
   pinMissing: 'Local ainda não marcado no mapa.',
   useMyLocation: 'Usar minha localização',
-  upload: 'Enviar imagem',
-  uploading: 'Enviando…',
-  removeImage: 'Remover imagem',
   save: 'Salvar',
   saving: 'Salvando…',
   cancel: 'Cancelar',
@@ -275,12 +292,21 @@ export const SECURITY = {
 
 export const ACCOUNT = {
   title: 'Minha conta',
-  subtitle: 'Seus dados de acesso e a segurança da sua conta.',
+  subtitle: 'Seu perfil, seus dados de acesso e a segurança da sua conta.',
   profileTitle: 'Perfil',
+  photo: 'Sua foto',
+  photoHint: 'Aparece no menu e na página Sobre nós.',
   name: 'Nome',
   email: 'E-mail',
-  saveProfile: 'Salvar nome',
-  profileSaved: 'Nome atualizado!',
+  headline: 'Frase de apresentação',
+  headlinePlaceholder: 'Ex.: Desenvolvedor & provador oficial de sobremesas',
+  bio: 'Sobre você',
+  bioPlaceholder: 'Algumas linhas sobre você e o seu jeito de avaliar restaurantes.',
+  instagram: 'Instagram',
+  instagramPlaceholder: 'seu_usuario',
+  showOnAbout: 'Mostrar meu perfil na página Sobre nós',
+  saveProfile: 'Salvar perfil',
+  profileSaved: 'Perfil atualizado!',
   passwordTitle: 'Trocar senha',
   passwordSave: 'Trocar senha',
   passwordSaved: 'Senha alterada! Os outros dispositivos foram desconectados.',
@@ -298,7 +324,7 @@ export const ACCOUNT = {
 
 export const USERS = {
   title: 'Usuários',
-  subtitle: 'Quem pode cadastrar e editar restaurantes. Todos têm acesso de administrador.',
+  subtitle: 'Quem pode entrar na área do casal e o que cada pessoa pode fazer.',
   add: 'Novo usuário',
   name: 'Nome',
   email: 'E-mail',
@@ -334,7 +360,30 @@ export const USERS = {
   twoFactorReset: '2FA resetado. Será configurado no próximo login.',
   unlocked: 'Usuário desbloqueado.',
   removed: 'Usuário excluído.',
+  accessTitle: 'Nível de acesso',
+  permissionsTitle: 'O que essa pessoa pode fazer',
+  ownAccess: 'Você não pode alterar o seu próprio nível de acesso.',
+  noPermissions: 'Só acessa a própria conta',
 } as const;
+
+export const ROLES: Record<Role, { label: string; description: string }> = {
+  admin: {
+    label: 'Administrador',
+    description: 'Acesso total, inclusive gerenciar usuários.',
+  },
+  member: {
+    label: 'Membro',
+    description: 'Acesso só ao que você marcar abaixo.',
+  },
+};
+
+export const PERMISSION_LABELS: Record<Permission, { label: string; short: string }> = {
+  'restaurants:create': { label: 'Cadastrar restaurantes', short: 'Cadastrar' },
+  'restaurants:update': { label: 'Editar restaurantes', short: 'Editar' },
+  'restaurants:delete': { label: 'Excluir restaurantes', short: 'Excluir' },
+  'dishes:manage': { label: 'Adicionar, editar e excluir pratos', short: 'Pratos' },
+  'analytics:view': { label: 'Ver o painel de acessos', short: 'Acessos' },
+};
 
 export const ANALYTICS = {
   title: 'Acessos',
@@ -389,22 +438,6 @@ export const ABOUT = {
   title: 'Sobre nós',
   intro:
     'Somos Gabriel e Milena, um casal que descobriu que as melhores conversas acontecem em volta de uma mesa. O Mesa a Dois nasceu para guardar essas memórias: cada restaurante, cada prato e a nota sincera que demos a eles.',
-  people: [
-    {
-      name: 'Gabriel',
-      photo: '/about/gabriel.webp',
-      instagram: 'gabalmeid29',
-      role: 'Desenvolvedor & provador oficial de sobremesas',
-      bio: 'Desenvolvedor, curioso por natureza. Construiu este site e não recusa um bom hambúrguer artesanal — nem uma segunda sobremesa.',
-    },
-    {
-      name: 'Milena',
-      photo: '/about/milena.webp',
-      instagram: 'mih_denardi',
-      role: 'Psicóloga & crítica exigente',
-      bio: 'Repara em cada detalhe: do atendimento ao empratamento. É quem escolhe os lugares novos e quem dá a palavra final sobre voltar ou não.',
-    },
-  ],
   howTitle: 'Como avaliamos',
   how: [
     {
@@ -415,6 +448,7 @@ export const ABOUT = {
     { title: 'Voltaríamos?', text: 'A pergunta que resume tudo: vale a pena voltar?' },
   ],
   instagramLabel: (handle: string) => `Instagram de @${handle}`,
+  teamEmpty: 'Em breve vocês vão conhecer quem está por trás das avaliações.',
   ctaTitle: 'Explore nosso mapa',
   ctaButton: 'Ver o mapa',
 } as const;
@@ -423,7 +457,7 @@ export const LEGAL = {
   title: 'Privacidade e termos de uso',
   updatedAt: 'Atualizado em 2 de outubro de 2026',
   intro:
-    'Este é um site pessoal, sem fins comerciais e sem publicidade, mantido por Gabriel e Milena. Aqui explicamos o que são as avaliações, quais dados o site usa e como falar com a gente.',
+    'Este é um site pessoal, sem fins comerciais e sem publicidade, mantido por Gabriel e Milena. Aqui explicamos o que são as avaliações, quais informações o site usa e como falar com a gente.',
   sections: [
     {
       title: 'Sobre as avaliações',
@@ -435,26 +469,19 @@ export const LEGAL = {
       ],
     },
     {
-      title: 'Dados de quem visita o site',
+      title: 'Informações de quem visita o site',
       paragraphs: [
         'Você não precisa de cadastro para navegar e o site não usa cookies de rastreamento ou de publicidade.',
-        'Para entender como o site é usado, registramos estatísticas de acesso: a página aberta, o texto do botão ou link clicado, o site de onde você veio, o tipo de dispositivo, navegador e sistema, e uma localização aproximada (cidade e país) calculada a partir do endereço IP no momento do acesso.',
-        'O endereço IP não é armazenado. Para contar visitantes únicos usamos um código irreversível que muda todos os dias, então não conseguimos identificar você nem acompanhar suas visitas ao longo do tempo.',
-        'Se o seu navegador envia o sinal “Do Not Track” ou “Global Privacy Control”, nenhuma estatística é registrada.',
-        'Esses dados são usados apenas por nós, com base no legítimo interesse de melhorar o site (art. 7º, IX, da LGPD), e são apagados automaticamente após 13 meses.',
-      ],
-    },
-    {
-      title: 'Área administrativa',
-      paragraphs: [
-        'Só Gabriel e Milena têm acesso de edição. O login usa um cookie de sessão estritamente necessário, protegido (httpOnly) e apagado quando o navegador é fechado.',
+        'Para entender como o site é usado, registramos estatísticas gerais de acesso, como as páginas mais vistas, os botões mais clicados, o tipo de dispositivo e a cidade ou país aproximado de onde o acesso veio.',
+        'Essas estatísticas são anônimas: não guardamos o seu endereço IP nem qualquer informação que identifique você.',
+        'Se o seu navegador estiver configurado para pedir que sites não rastreiem a navegação, nenhuma estatística é registrada.',
+        'As estatísticas são usadas apenas por nós para melhorar o site e são apagadas automaticamente após 13 meses.',
       ],
     },
     {
       title: 'Serviços de terceiros',
       paragraphs: [
-        'Os mapas são carregados do OpenFreeMap, com dados do OpenStreetMap. Como em qualquer site que exibe conteúdo externo, o seu navegador se conecta a esses servidores e eles recebem o seu endereço IP.',
-        'A localização aproximada por IP é feita no nosso próprio servidor com a base IP to City Lite da DB-IP (licença CC BY 4.0), sem enviar dados a terceiros.',
+        'Os mapas são exibidos com dados do OpenStreetMap. Como em qualquer site que mostra conteúdo externo, o seu navegador se conecta ao serviço do mapa para carregar as imagens.',
         'Os links para o Instagram levam a um serviço externo, com política de privacidade própria.',
       ],
     },
@@ -467,15 +494,13 @@ export const LEGAL = {
     {
       title: 'Seus direitos',
       paragraphs: [
-        'Pela Lei Geral de Proteção de Dados (Lei 13.709/2018) você pode pedir informações, correção ou exclusão de dados pessoais. Como não guardamos IP nem identificadores permanentes, em geral não há como associar as estatísticas a uma pessoa, mas responderemos qualquer pedido.',
+        'Pela Lei Geral de Proteção de Dados (Lei 13.709/2018) você pode pedir informações, correção ou exclusão de dados pessoais. Como as estatísticas são anônimas, em geral não há como associá-las a uma pessoa, mas responderemos qualquer pedido.',
       ],
     },
   ],
   contactTitle: 'Contato',
   contactText:
     'Para pedidos de correção, remoção de conteúdo ou dúvidas sobre privacidade, mande uma mensagem no Instagram:',
-  changesText:
-    'Podemos atualizar este texto quando o site mudar. A data no topo indica a última atualização.',
   credits: 'Créditos',
 } as const;
 
@@ -488,4 +513,5 @@ export const COMMON = {
   close: 'Fechar',
   notFoundTitle: 'Página não encontrada',
   notFoundText: 'Parece que essa mesa não está reservada.',
+  forbidden: 'Seu usuário não tem permissão para acessar esta página.',
 } as const;

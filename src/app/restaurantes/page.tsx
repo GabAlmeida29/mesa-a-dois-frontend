@@ -11,10 +11,10 @@ import { useDebouncedValue } from '@/lib/use-debounced-value';
 import type { Restaurant, SortOption } from '@/lib/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
-import { RestaurantCard } from '@/components/RestaurantCard';
-import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { EmptyState, ErrorState, Loading } from '@/components/States';
-import { RestaurantFiltersPanel } from '@/components/RestaurantFilters';
+import { RestaurantCard } from '@/components/restaurant/RestaurantCard';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { EmptyState, ErrorState, Loading } from '@/components/ui/States';
+import { RestaurantFiltersPanel } from '@/components/restaurant/RestaurantFilters';
 import {
   EMPTY_FILTERS,
   applyFilters,
@@ -36,7 +36,8 @@ export default function RestaurantsPage() {
 }
 
 function RestaurantsView() {
-  const { isAdmin } = useAuth();
+  const { can } = useAuth();
+  const canCreate = can('restaurants:create');
   const toast = useToast();
   const router = useRouter();
   const pathname = usePathname();
@@ -117,7 +118,7 @@ function RestaurantsView() {
           </h1>
           <p className="text-muted mt-2">{RESTAURANTS.subtitle}</p>
         </div>
-        {isAdmin && (
+        {canCreate && (
           <Link href="/restaurantes/novo" className="btn-primary self-start sm:self-auto">
             <Plus className="size-4" /> {NAV.newRestaurant}
           </Link>
@@ -148,7 +149,7 @@ function RestaurantsView() {
             <SlidersHorizontal className="size-4" />
             {RESTAURANTS.filters.button}
             {activeCount > 0 && (
-              <span className="bg-accent grid size-5 place-items-center rounded-full text-xs font-semibold text-black">
+              <span className="bg-accent text-on-accent grid size-5 place-items-center rounded-full text-xs font-semibold">
                 {activeCount}
               </span>
             )}
@@ -181,8 +182,8 @@ function RestaurantsView() {
       ) : !data || !filtered ? (
         <Loading />
       ) : data.length === 0 ? (
-        <EmptyState text={isAdmin && !q ? RESTAURANTS.emptyAdmin : RESTAURANTS.empty}>
-          {isAdmin && !q && (
+        <EmptyState text={canCreate && !q ? RESTAURANTS.emptyAdmin : RESTAURANTS.empty}>
+          {canCreate && !q && (
             <Link href="/restaurantes/novo" className="btn-primary">
               <Plus className="size-4" /> {NAV.newRestaurant}
             </Link>
@@ -197,7 +198,13 @@ function RestaurantsView() {
       ) : (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filtered.map((r) => (
-            <RestaurantCard key={r.id} restaurant={r} isAdmin={isAdmin} onDelete={setToDelete} />
+            <RestaurantCard
+              key={r.id}
+              restaurant={r}
+              canEdit={can('restaurants:update')}
+              canDelete={can('restaurants:delete')}
+              onDelete={setToDelete}
+            />
           ))}
         </div>
       )}

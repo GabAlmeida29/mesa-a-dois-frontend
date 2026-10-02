@@ -2,12 +2,13 @@ import Link from 'next/link';
 import { Heart } from 'lucide-react';
 import { APP, NAV } from '@/constants/texts';
 import { MAP_CREDITS } from '@/constants/config';
+import { LogoWordmark } from '@/components/brand/Logo';
 
 export function Footer() {
   return (
     <footer className="border-border/70 border-t py-8">
       <div className="text-faint mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 text-sm sm:flex-row sm:px-6">
-        <span className="font-display text-muted text-base">{APP.name}</span>
+        <LogoWordmark className="h-6 opacity-90" />
         <span className="flex items-center gap-1.5">
           <Heart className="text-accent size-3.5" /> {APP.footer} · {new Date().getFullYear()}
         </span>

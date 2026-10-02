@@ -9,7 +9,7 @@ import { api, ApiError } from '@/lib/api';
 import { emptyToNull, moneyField, numberToField, ratingField, toNumberOrNull } from '@/lib/form-utils';
 import type { Dish } from '@/lib/types';
 import { useToast } from '@/contexts/ToastContext';
-import { ImageUpload } from './ImageUpload';
+import { ImageUpload } from '@/components/image/ImageUpload';
 
 const schema = z.object({
   name: z.string().trim().min(1, FORM.errors.required).max(120),
@@ -77,6 +77,7 @@ export function DishForm({ restaurantId, dish, onSaved, onCancel }: Props) {
           <ImageUpload
             label={FORM.fields.dishPhoto}
             folder="dishes"
+            className="mx-auto w-full max-w-60"
             value={field.value}
             onChange={field.onChange}
           />

@@ -8,9 +8,10 @@
   --color-text: #f3eee8;
   --color-muted: #a39ca8;
   --color-faint: #6f6876;
-  --color-accent: #f2704f;
-  --color-accent-strong: #ff8a6a;
-  --color-gold: #f2b950;
+  --color-accent: #d9773e;
+  --color-accent-strong: #ea9157;
+  --color-on-accent: #1a100a;
+  --color-gold: #e3a24f;
   --color-good: #4fd18b;
   --color-bad: #f2545b;
 
@@ -22,8 +23,8 @@
 
 :root {
   color-scheme: dark;
-  --glow-accent: rgb(242 112 79 / 0.1);
-  --glow-gold: rgb(242 185 80 / 0.06);
+  --glow-accent: rgb(217 119 62 / 0.1);
+  --glow-gold: rgb(212 122 51 / 0.06);
   --map-bg: #0e0d11;
   --shadow-strong: rgb(0 0 0 / 0.5);
   --image-shade: rgb(0 0 0 / 0.5);
@@ -31,23 +32,24 @@
 
 :root[data-theme='light'] {
   color-scheme: light;
-  --color-bg: #f5efe7;
-  --color-surface: #fbf8f3;
-  --color-surface-2: #f0e8de;
-  --color-border: #e3d8cb;
-  --color-text: #2f2a2e;
-  --color-muted: #6c6267;
-  --color-faint: #998e91;
-  --color-accent: #df7656;
-  --color-accent-strong: #c8603f;
-  --color-gold: #b07f2c;
+  --color-bg: #f7f0e7;
+  --color-surface: #fcf8f3;
+  --color-surface-2: #f2e9de;
+  --color-border: #e6d9ca;
+  --color-text: #2f2621;
+  --color-muted: #6d6159;
+  --color-faint: #9a8d84;
+  --color-accent: #a8522a;
+  --color-accent-strong: #8f4321;
+  --color-on-accent: #fff8f1;
+  --color-gold: #b9772b;
   --color-good: #3b8f63;
-  --color-bad: #c94d53;
-  --glow-accent: rgb(242 160 130 / 0.22);
-  --glow-gold: rgb(176 214 196 / 0.25);
-  --map-bg: #efe7dc;
-  --shadow-strong: rgb(80 60 40 / 0.18);
-  --image-shade: rgb(60 40 25 / 0.18);
+  --color-bad: #c44a4f;
+  --glow-accent: rgb(212 122 51 / 0.16);
+  --glow-gold: rgb(176 214 196 / 0.22);
+  --map-bg: #efe6da;
+  --shadow-strong: rgb(80 50 30 / 0.16);
+  --image-shade: rgb(60 35 20 / 0.18);
 }
 
 html,
@@ -66,7 +68,7 @@ body {
 }
 
 ::selection {
-  background: rgb(242 112 79 / 0.35);
+  background: color-mix(in srgb, var(--color-accent) 35%, transparent);
 }
 
 @utility card {
@@ -76,7 +78,7 @@ body {
   @apply focus-visible:outline-accent inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
 }
 @utility btn-primary {
-  @apply btn bg-accent hover:bg-accent-strong text-black;
+  @apply btn bg-accent hover:bg-accent-strong text-on-accent;
 }
 @utility btn-ghost {
   @apply btn border-border bg-surface-2 text-text hover:border-faint border;
@@ -169,7 +171,7 @@ body {
   transform: rotate(-45deg);
   background: var(--color-accent);
   border: 3px solid var(--color-bg);
-  box-shadow: 0 8px 20px rgb(242 112 79 / 0.45);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--color-accent) 45%, transparent);
   transition: transform 0.15s ease;
 }
 .mesa-pin:hover {
@@ -188,7 +190,7 @@ body {
 .mesa-pin span {
   font-weight: 700;
   font-size: 13px;
-  color: #0c0b0e;
+  color: var(--color-on-accent);
 }
 
 .leaflet-container .leaflet-tooltip {
@@ -206,4 +208,8 @@ body {
 .leaflet-container .visitor-dot {
   fill: var(--color-accent);
   stroke: var(--color-surface);
+}
+
+:root[data-theme='dark'] .brand-image {
+  filter: brightness(1.18) saturate(1.05);
 }

@@ -2,16 +2,16 @@ import { Pencil, Trash2, UtensilsCrossed } from 'lucide-react';
 import { DISHES, RESTAURANTS } from '@/constants/texts';
 import { formatMoney } from '@/lib/format';
 import type { Dish } from '@/lib/types';
-import { RatingBadge } from './RatingBadge';
+import { RatingBadge } from '@/components/restaurant/RatingBadge';
 
 interface Props {
   dish: Dish;
-  isAdmin: boolean;
+  canManage: boolean;
   onEdit: (dish: Dish) => void;
   onDelete: (dish: Dish) => void;
 }
 
-export function DishCard({ dish, isAdmin, onEdit, onDelete }: Props) {
+export function DishCard({ dish, canManage, onEdit, onDelete }: Props) {
   return (
     <article className="card overflow-hidden">
       <div className="bg-surface-2 relative aspect-[4/3]">
@@ -43,7 +43,7 @@ export function DishCard({ dish, isAdmin, onEdit, onDelete }: Props) {
             {RESTAURANTS.ratingMilena}: {dish.ratingMilena ?? '–'}
           </span>
         </div>
-        {isAdmin && (
+        {canManage && (
           <div className="flex gap-2 pt-2">
             <button className="btn-ghost flex-1 !py-1.5" onClick={() => onEdit(dish)}>
               <Pencil className="size-4" /> {RESTAURANTS.edit}

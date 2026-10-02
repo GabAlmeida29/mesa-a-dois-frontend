@@ -4,11 +4,18 @@ import type {
   DishInput,
   Enrollment,
   ManagedUser,
+  Permission,
+  Profile,
+  ProfileInput,
+  Role,
+  TeamMember,
   Restaurant,
   RestaurantInput,
   SortOption,
   User,
 } from './types';
+
+export type ImageFolder = 'logos' | 'dishes' | 'avatars';
 
 export class ApiError extends Error {
   constructor(
@@ -62,18 +69,27 @@ export const api = {
       body: JSON.stringify({ email, password, ...(code ? { code } : {}) }),
     }),
   logout: () => request<void>('/api/auth/logout', { method: 'POST' }),
-  me: () => request<{ user: User }>('/api/auth/me'),
-  updateMe: (name: string) => request<{ user: User }>('/api/auth/me', json('PUT', { name })),
+  me: () => request<{ user: Profile }>('/api/auth/me'),
+  updateMe: (data: ProfileInput) => request<{ user: Profile }>('/api/auth/me', json('PUT', data)),
+  team: () => request<TeamMember[]>('/api/team'),
   enrollTwoFactor: (enrollmentToken: string, code: string) =>
     request<{ user: User }>('/api/auth/2fa/enroll', json('POST', { enrollmentToken, code })),
   startTwoFactorSetup: (currentPassword: string) =>
     request<Enrollment>('/api/auth/2fa/setup', json('POST', { currentPassword })),
   logoutOthers: () => request<void>('/api/auth/logout-others', json('POST')),
   listUsers: () => request<ManagedUser[]>('/api/users'),
-  createUser: (data: { name: string; email: string; password: string; currentPassword: string }) =>
-    request<ManagedUser>('/api/users', json('POST', data)),
-  updateUser: (id: string, data: { name?: string; email?: string }) =>
-    request<ManagedUser>(userPath(id), json('PUT', data)),
+  createUser: (data: {
+    name: string;
+    email: string;
+    password: string;
+    currentPassword: string;
+    role: Role;
+    permissions: Permission[];
+  }) => request<ManagedUser>('/api/users', json('POST', data)),
+  updateUser: (
+    id: string,
+    data: { name?: string; email?: string; role?: Role; permissions?: Permission[] },
+  ) => request<ManagedUser>(userPath(id), json('PUT', data)),
   setUserPassword: (id: string, password: string, currentPassword: string) =>
     request<void>(userPath(id, '/password'), json('POST', { password, currentPassword })),
   resetUserTwoFactor: (id: string, currentPassword: string) =>
@@ -120,9 +136,9 @@ export const api = {
         method: 'DELETE',
       },
     ),
-  upload: (file: File, folder: 'logos' | 'dishes') => {
+  upload: (file: Blob, folder: ImageFolder, filename = 'imagem.webp') => {
     const form = new FormData();
-    form.append('file', file);
+    form.append('file', file, filename);
     return request<{ url: string }>(`/api/uploads?folder=${folder}`, { method: 'POST', body: form });
   },
 };

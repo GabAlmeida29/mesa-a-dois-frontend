@@ -25,7 +25,7 @@ export function RestaurantThumbnail({
     <span
       aria-hidden
       style={{ ...style, fontSize: size * 0.42 }}
-      className="from-accent to-gold font-display grid shrink-0 place-items-center rounded-xl bg-gradient-to-br font-semibold text-black"
+      className="from-accent to-gold font-display text-on-accent grid shrink-0 place-items-center rounded-xl bg-gradient-to-br font-semibold"
     >
       {name.trim().charAt(0).toUpperCase() || '?'}
     </span>

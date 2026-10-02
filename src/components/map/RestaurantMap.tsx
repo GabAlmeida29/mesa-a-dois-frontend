@@ -10,8 +10,8 @@ import { MAP_DEFAULT_CENTER, MAP_DEFAULT_ZOOM } from '@/constants/config';
 import { HOME, RESTAURANTS } from '@/constants/texts';
 import type { Restaurant } from '@/lib/types';
 import { formatDate, priceSymbols } from '@/lib/format';
-import { RatingBadge } from '../RatingBadge';
-import { RestaurantThumbnail } from '../RestaurantThumbnail';
+import { RatingBadge } from '@/components/restaurant/RatingBadge';
+import { RestaurantThumbnail } from '@/components/restaurant/RestaurantThumbnail';
 import { BaseTiles } from './BaseTiles';
 import { restaurantIcon } from './leaflet-utils';
 
@@ -64,10 +64,7 @@ export default function RestaurantMap({ restaurants }: { restaurants: Restaurant
                   <RatingBadge value={r.averageRating} size="sm" />
                 </div>
 
-                <Link
-                  href={`/restaurantes/${r.id}`}
-                  className="btn-primary mt-4 w-full !py-2 !text-sm !text-black"
-                >
+                <Link href={`/restaurantes/${r.id}`} className="btn-primary mt-4 w-full !py-2 !text-sm">
                   {HOME.seeDetails}
                 </Link>
               </div>

@@ -10,20 +10,20 @@ import { googleMapsUrl, priceSymbols } from '@/lib/format';
 import type { Dish, Restaurant } from '@/lib/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
-import { DishCard } from '@/components/DishCard';
-import { RatingSummary } from '@/components/RatingSummary';
-import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { Modal } from '@/components/Modal';
-import { DishForm } from '@/components/DishForm';
+import { DishCard } from '@/components/dish/DishCard';
+import { RatingSummary } from '@/components/restaurant/RatingSummary';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { Modal } from '@/components/ui/Modal';
+import { DishForm } from '@/components/dish/DishForm';
 import { RestaurantMap } from '@/components/map';
-import { ErrorState, Loading } from '@/components/States';
+import { ErrorState, Loading } from '@/components/ui/States';
 
 type DishModal = { mode: 'create' } | { mode: 'edit'; dish: Dish } | null;
 
 export default function RestaurantDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { isAdmin } = useAuth();
+  const { can } = useAuth();
   const toast = useToast();
 
   const [data, setData] = useState<Restaurant | null>(null);
@@ -103,16 +103,18 @@ export default function RestaurantDetailPage() {
             {meta && <p className="text-muted mt-1">{meta}</p>}
             {data.description && <p className="text-muted mt-2 max-w-2xl text-sm">{data.description}</p>}
           </div>
-          {isAdmin && (
-            <div className="flex gap-2">
+          <div className="flex gap-2">
+            {can('restaurants:update') && (
               <Link href={`/restaurantes/${data.id}/editar`} className="btn-ghost">
                 <Pencil className="size-4" /> {RESTAURANTS.edit}
               </Link>
+            )}
+            {can('restaurants:delete') && (
               <button className="btn-danger" onClick={() => setConfirmRestaurant(true)}>
                 <Trash2 className="size-4" /> {RESTAURANTS.delete}
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-[1fr_1.4fr]">
@@ -129,7 +131,7 @@ export default function RestaurantDetailPage() {
         <section className="mt-10">
           <div className="mb-4 flex items-center justify-between gap-4">
             <h2 className="font-display text-2xl font-semibold">{DISHES.title}</h2>
-            {isAdmin && (
+            {can('dishes:manage') && (
               <button className="btn-primary" onClick={() => setDishModal({ mode: 'create' })}>
                 <Plus className="size-4" /> {DISHES.add}
               </button>
@@ -144,7 +146,7 @@ export default function RestaurantDetailPage() {
                 <DishCard
                   key={dish.id}
                   dish={dish}
-                  isAdmin={isAdmin}
+                  canManage={can('dishes:manage')}
                   onEdit={(d) => setDishModal({ mode: 'edit', dish: d })}
                   onDelete={setDishToDelete}
                 />

@@ -53,10 +53,39 @@ export type ScoreKey =
   | 'scoreValue'
   | 'scoreWait';
 
+export type Role = 'admin' | 'member';
+
+export type Permission =
+  'restaurants:create' | 'restaurants:update' | 'restaurants:delete' | 'dishes:manage' | 'analytics:view';
+
 export interface User {
   id: string;
   name: string;
   email: string;
+  role: Role;
+  permissions: Permission[];
+  avatarUrl: string | null;
+}
+
+export interface Profile extends User {
+  headline: string | null;
+  bio: string | null;
+  instagram: string | null;
+  showOnAbout: boolean;
+}
+
+export type ProfileInput = Pick<
+  Profile,
+  'name' | 'headline' | 'bio' | 'instagram' | 'avatarUrl' | 'showOnAbout'
+>;
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+  headline: string | null;
+  bio: string | null;
+  instagram: string | null;
 }
 
 export interface ManagedUser extends User {
@@ -65,6 +94,8 @@ export interface ManagedUser extends User {
   lastLoginAt: string | null;
   createdAt: string;
 }
+
+export type UserAccess = Pick<User, 'role' | 'permissions'>;
 
 export interface Enrollment {
   enrollmentToken: string;

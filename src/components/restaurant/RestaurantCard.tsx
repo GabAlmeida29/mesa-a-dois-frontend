@@ -18,11 +18,12 @@ import { RatingBadge } from './RatingBadge';
 
 interface Props {
   restaurant: Restaurant;
-  isAdmin: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
   onDelete: (r: Restaurant) => void;
 }
 
-export function RestaurantCard({ restaurant: r, isAdmin, onDelete }: Props) {
+export function RestaurantCard({ restaurant: r, canEdit, canDelete, onDelete }: Props) {
   const visited = formatDate(r.visitedAt);
 
   return (
@@ -87,25 +88,25 @@ export function RestaurantCard({ restaurant: r, isAdmin, onDelete }: Props) {
           <Link href={`/restaurantes/${r.id}`} className="btn-ghost flex-1 !py-1.5">
             <Eye className="size-4" /> {RESTAURANTS.view}
           </Link>
-          {isAdmin && (
-            <>
-              <Link
-                href={`/restaurantes/${r.id}/editar`}
-                className="btn-ghost !p-2"
-                aria-label={RESTAURANTS.edit}
-                title={RESTAURANTS.edit}
-              >
-                <Pencil className="size-4" />
-              </Link>
-              <button
-                className="btn-danger !p-2"
-                onClick={() => onDelete(r)}
-                aria-label={RESTAURANTS.delete}
-                title={RESTAURANTS.delete}
-              >
-                <Trash2 className="size-4" />
-              </button>
-            </>
+          {canEdit && (
+            <Link
+              href={`/restaurantes/${r.id}/editar`}
+              className="btn-ghost !p-2"
+              aria-label={RESTAURANTS.edit}
+              title={RESTAURANTS.edit}
+            >
+              <Pencil className="size-4" />
+            </Link>
+          )}
+          {canDelete && (
+            <button
+              className="btn-danger !p-2"
+              onClick={() => onDelete(r)}
+              aria-label={RESTAURANTS.delete}
+              title={RESTAURANTS.delete}
+            >
+              <Trash2 className="size-4" />
+            </button>
           )}
         </div>
       </div>

@@ -8,7 +8,7 @@ import { api } from '@/lib/api';
 import { formatRating } from '@/lib/format';
 import type { Restaurant } from '@/lib/types';
 import { RestaurantMap } from '@/components/map';
-import { ErrorState, Loading } from '@/components/States';
+import { ErrorState, Loading } from '@/components/ui/States';
 
 export default function HomePage() {
   const [data, setData] = useState<Restaurant[] | null>(null);

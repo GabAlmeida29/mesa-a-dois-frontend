@@ -7,12 +7,12 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { THEME_COLORS, themeInitScript } from '@/lib/theme';
 import { ToastProvider } from '@/contexts/ToastContext';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
-import { AnalyticsTracker } from '@/components/AnalyticsTracker';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
+import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 
 export const metadata: Metadata = {
-  title: { default: APP.name, template: `%s · ${APP.name}` },
+  title: APP.name,
   description: APP.description,
 };
 

@@ -1,4 +1,4 @@
-import { AlertTriangle, Loader2, UtensilsCrossed } from 'lucide-react';
+import { AlertTriangle, Loader2, UtensilsCrossed, type LucideIcon } from 'lucide-react';
 import { COMMON } from '@/constants/texts';
 
 export function Loading({ text = COMMON.loading }: { text?: string }) {
@@ -23,10 +23,18 @@ export function ErrorState({ message = COMMON.error, onRetry }: { message?: stri
   );
 }
 
-export function EmptyState({ text, children }: { text: string; children?: React.ReactNode }) {
+export function EmptyState({
+  text,
+  icon: Icon = UtensilsCrossed,
+  children,
+}: {
+  text: string;
+  icon?: LucideIcon;
+  children?: React.ReactNode;
+}) {
   return (
     <div className="card mx-auto flex max-w-md flex-col items-center gap-4 p-10 text-center">
-      <UtensilsCrossed className="text-faint size-10" />
+      <Icon className="text-faint size-10" />
       <p className="text-muted">{text}</p>
       {children}
     </div>

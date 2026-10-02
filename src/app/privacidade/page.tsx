@@ -1,9 +1,7 @@
-import type { Metadata } from 'next';
-import { AtSign, ShieldCheck } from 'lucide-react';
-import { ABOUT, LEGAL } from '@/constants/texts';
+import { ShieldCheck } from 'lucide-react';
+import { TeamContacts } from '@/components/team/TeamContacts';
+import { LEGAL } from '@/constants/texts';
 import { GEOIP_CREDIT, MAP_CREDITS } from '@/constants/config';
-
-export const metadata: Metadata = { title: LEGAL.title };
 
 export default function PrivacyPage() {
   return (
@@ -30,19 +28,7 @@ export default function PrivacyPage() {
         <section className="card p-6">
           <h2 className="font-display text-xl font-semibold">{LEGAL.contactTitle}</h2>
           <p className="text-muted mt-2">{LEGAL.contactText}</p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {ABOUT.people.map((p) => (
-              <a
-                key={p.instagram}
-                href={`https://www.instagram.com/${p.instagram}/`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-ghost !py-1.5"
-              >
-                <AtSign className="text-accent size-4" /> {p.instagram}
-              </a>
-            ))}
-          </div>
+          <TeamContacts />
         </section>
 
         <section>
@@ -61,7 +47,6 @@ export default function PrivacyPage() {
               </li>
             ))}
           </ul>
-          <p className="text-faint mt-6 text-sm">{LEGAL.changesText}</p>
         </section>
       </div>
     </div>
