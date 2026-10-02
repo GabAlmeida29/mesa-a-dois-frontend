@@ -4,11 +4,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import clsx from 'clsx';
-import { LogIn, LogOut, Menu, Plus, UtensilsCrossed, X } from 'lucide-react';
+import { LogIn, LogOut, Menu, UtensilsCrossed, X } from 'lucide-react';
 import { APP, NAV } from '@/constants/texts';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserAvatar } from './UserAvatar';
-import { UserMenu } from './UserMenu';
+import { ADMIN_LINKS, UserMenu } from './UserMenu';
+import { ThemeSwitcher } from './ThemeSwitcher';
 
 const links = [
   { href: '/', label: NAV.map },
@@ -48,7 +49,8 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-3 md:flex">
+          <ThemeSwitcher />
           {user ? (
             <UserMenu user={user} onLogout={logout} />
           ) : (
@@ -86,6 +88,7 @@ export function Header() {
             ))}
           </nav>
           <div className="mt-4 flex flex-col gap-2">
+            <ThemeSwitcher showLabels />
             {user ? (
               <>
                 <div className="bg-surface mb-2 flex items-center gap-3 rounded-xl px-4 py-3">
@@ -95,9 +98,16 @@ export function Header() {
                     <p className="text-faint truncate text-xs">{user.email}</p>
                   </div>
                 </div>
-                <Link href="/restaurantes/novo" className="btn-primary" onClick={() => setOpen(false)}>
-                  <Plus className="size-4" /> {NAV.newRestaurant}
-                </Link>
+                {ADMIN_LINKS.map(({ href, label, icon: Icon }, i) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={i === 0 ? 'btn-primary' : 'btn-ghost'}
+                    onClick={() => setOpen(false)}
+                  >
+                    <Icon className="size-4" /> {label}
+                  </Link>
+                ))}
                 <button
                   className="btn-ghost"
                   onClick={() => {

@@ -6,10 +6,13 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, KeyRound, Loader2, Lock } from 'lucide-react';
-import { LOGIN } from '@/constants/texts';
+import { ArrowLeft, KeyRound, Loader2, Lock, ShieldCheck } from 'lucide-react';
+import { LOGIN, TWO_FACTOR } from '@/constants/texts';
 import { useAuth } from '@/contexts/AuthContext';
 import { ApiError } from '@/lib/api';
+import type { Enrollment } from '@/lib/types';
+import { TwoFactorEnrollment } from '@/components/TwoFactorEnrollment';
+import { useToast } from '@/contexts/ToastContext';
 
 const schema = z.object({
   email: z.string().trim().email(LOGIN.emailInvalid),
@@ -18,7 +21,8 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function LoginPage() {
-  const { login, user } = useAuth();
+  const { login, enroll, user } = useAuth();
+  const toast = useToast();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -26,7 +30,7 @@ export default function LoginPage() {
   const [code, setCode] = useState('');
   const [verifying, setVerifying] = useState(false);
 
-  const [setupEmail, setSetupEmail] = useState<string | null>(null);
+  const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
   const {
     register,
     handleSubmit,
@@ -48,8 +52,8 @@ export default function LoginPage() {
         setPending(v);
         return;
       }
-      if (e instanceof ApiError && e.mfaSetupRequired) {
-        setSetupEmail(v.email);
+      if (e instanceof ApiError && e.mfaSetupRequired && e.enrollment) {
+        setEnrollment(e.enrollment);
         return;
       }
       handleError(e, LOGIN.invalid);
@@ -73,14 +77,32 @@ export default function LoginPage() {
     }
   }
 
+  async function onEnroll(enrollCode: string) {
+    if (!enrollment) return;
+    setError(null);
+    try {
+      await enroll(enrollment.enrollmentToken, enrollCode);
+      setEnrollment(null);
+      toast(TWO_FACTOR.done);
+      router.push('/restaurantes');
+    } catch (err) {
+      handleError(err, err instanceof ApiError ? err.message : LOGIN.mfaInvalid);
+    }
+  }
+
+  const title = enrollment ? LOGIN.mfaSetupTitle : pending ? LOGIN.mfaTitle : LOGIN.title;
+  const Icon = enrollment ? ShieldCheck : pending ? KeyRound : Lock;
+
   return (
     <div className="mx-auto flex max-w-md flex-col px-4 py-16 sm:py-24">
       <div className="card p-6 sm:p-8">
         <span className="bg-accent/15 text-accent mb-4 grid size-12 place-items-center rounded-full">
-          {pending ? <KeyRound className="size-5" /> : <Lock className="size-5" />}
+          <Icon className="size-5" />
         </span>
-        <h1 className="font-display text-2xl font-semibold">{pending ? LOGIN.mfaTitle : LOGIN.title}</h1>
-        <p className="text-muted mt-1 text-sm">{pending ? LOGIN.mfaSubtitle : LOGIN.subtitle}</p>
+        <h1 className="font-display text-2xl font-semibold">{title}</h1>
+        {!enrollment && (
+          <p className="text-muted mt-1 text-sm">{pending ? LOGIN.mfaSubtitle : LOGIN.subtitle}</p>
+        )}
 
         {user ? (
           <div className="mt-6 space-y-4">
@@ -89,19 +111,23 @@ export default function LoginPage() {
               {LOGIN.backHome}
             </Link>
           </div>
-        ) : setupEmail ? (
-          <div className="mt-6 space-y-4">
-            <h2 className="font-medium">{LOGIN.mfaSetupTitle}</h2>
-            <p className="text-muted text-sm">{LOGIN.mfaSetupText}</p>
-            <code className="bg-surface-2 text-gold block overflow-x-auto rounded-xl px-3 py-2 text-xs">
-              {LOGIN.mfaSetupCommand(setupEmail)}
-            </code>
-            <button type="button" className="btn-ghost w-full" onClick={() => setSetupEmail(null)}>
-              <ArrowLeft className="size-4" /> {LOGIN.mfaBack}
-            </button>
+        ) : enrollment ? (
+          <div className="mt-4">
+            <TwoFactorEnrollment enrollment={enrollment} onSubmit={onEnroll} error={error}>
+              <button
+                type="button"
+                className="btn-ghost w-full"
+                onClick={() => {
+                  setEnrollment(null);
+                  setError(null);
+                }}
+              >
+                <ArrowLeft className="size-4" /> {LOGIN.mfaBack}
+              </button>
+            </TwoFactorEnrollment>
           </div>
         ) : pending ? (
-          <form onSubmit={onVerify} className="mt-6 space-y-4">
+          <form key="mfa" onSubmit={onVerify} className="mt-6 space-y-4">
             <div>
               <label className="label" htmlFor="code">
                 {LOGIN.mfaCode}
@@ -139,7 +165,7 @@ export default function LoginPage() {
             </button>
           </form>
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4" noValidate>
+          <form key="login" onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4" noValidate>
             <div>
               <label className="label" htmlFor="email">
                 {LOGIN.email}

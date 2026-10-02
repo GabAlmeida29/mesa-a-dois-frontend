@@ -4,10 +4,18 @@ const dateFmt = new Intl.DateTimeFormat('pt-BR', {
   year: 'numeric',
   timeZone: 'UTC',
 });
+const dateTimeFmt = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit',
+  month: 'short',
+  hour: '2-digit',
+  minute: '2-digit',
+  timeZone: 'America/Sao_Paulo',
+});
 const moneyFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 const ratingFmt = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
 export const formatDate = (iso: string | null) => (iso ? dateFmt.format(new Date(`${iso}T00:00:00Z`)) : null);
+export const formatDateTime = (iso: string | null) => (iso ? dateTimeFmt.format(new Date(iso)) : null);
 export const formatMoney = (v: number | null) => (v === null ? null : moneyFmt.format(v));
 export const formatRating = (v: number | null) => (v === null ? '–' : ratingFmt.format(v));
 export const priceSymbols = (level: number | null) => (level ? '$'.repeat(level) : null);

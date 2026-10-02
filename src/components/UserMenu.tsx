@@ -3,10 +3,17 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import clsx from 'clsx';
-import { ChevronDown, LogOut, Plus } from 'lucide-react';
+import { BarChart3, ChevronDown, LogOut, Plus, UserCog, Users } from 'lucide-react';
 import { NAV } from '@/constants/texts';
 import type { User } from '@/lib/types';
 import { UserAvatar } from './UserAvatar';
+
+export const ADMIN_LINKS = [
+  { href: '/restaurantes/novo', label: NAV.newRestaurant, icon: Plus },
+  { href: '/admin/acessos', label: NAV.analytics, icon: BarChart3 },
+  { href: '/admin/usuarios', label: NAV.users, icon: Users },
+  { href: '/conta', label: NAV.account, icon: UserCog },
+];
 
 export function UserMenu({ user, onLogout }: { user: User; onLogout: () => void }) {
   const [open, setOpen] = useState(false);
@@ -68,14 +75,18 @@ export function UserMenu({ user, onLogout }: { user: User; onLogout: () => void 
             </div>
           </div>
           <div className="p-1.5">
-            <Link
-              href="/restaurantes/novo"
-              role="menuitem"
-              onClick={close}
-              className="hover:bg-surface-2 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm"
-            >
-              <Plus className="text-accent size-4" /> {NAV.newRestaurant}
-            </Link>
+            {ADMIN_LINKS.map(({ href, label, icon: Icon }) => (
+              <Link
+                key={href}
+                href={href}
+                role="menuitem"
+                onClick={close}
+                className="hover:bg-surface-2 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm"
+              >
+                <Icon className="text-accent size-4" /> {label}
+              </Link>
+            ))}
+            <div className="border-border my-1.5 border-t" />
             <button
               type="button"
               role="menuitem"

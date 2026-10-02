@@ -13,3 +13,8 @@ export const LocationPicker = dynamic(() => import('./LocationPicker'), {
   ssr: false,
   loading: () => createElement(Loading),
 });
+
+export const VisitorsMap = dynamic(() => import('./VisitorsMap'), {
+  ssr: false,
+  loading: () => createElement(Loading),
+});

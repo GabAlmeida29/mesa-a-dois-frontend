@@ -1,5 +1,6 @@
+import Link from 'next/link';
 import { Heart } from 'lucide-react';
-import { APP } from '@/constants/texts';
+import { APP, NAV } from '@/constants/texts';
 import { MAP_CREDITS } from '@/constants/config';
 
 export function Footer() {
@@ -10,6 +11,12 @@ export function Footer() {
         <span className="flex items-center gap-1.5">
           <Heart className="text-accent size-3.5" /> {APP.footer} · {new Date().getFullYear()}
         </span>
+      </div>
+      <div className="text-faint mx-auto mt-4 flex max-w-7xl flex-col items-center justify-between gap-2 px-4 text-xs sm:flex-row sm:px-6">
+        <p className="text-center sm:text-left">{APP.disclaimer}</p>
+        <Link href="/privacidade" className="hover:text-text shrink-0 underline-offset-2 hover:underline">
+          {NAV.privacy}
+        </Link>
       </div>
       <p className="text-faint/70 mx-auto mt-3 max-w-7xl px-4 text-center text-[11px] sm:px-6 sm:text-right">
         {APP.mapCredits}{' '}

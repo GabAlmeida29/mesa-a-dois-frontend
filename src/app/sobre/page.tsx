@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Heart, MapPinned, Star, ThumbsUp, UtensilsCrossed } from 'lucide-react';
+import { AtSign, Heart, MapPinned, Star, ThumbsUp, UtensilsCrossed } from 'lucide-react';
 import { ABOUT } from '@/constants/texts';
 
 export const metadata: Metadata = { title: ABOUT.title };
@@ -31,6 +31,15 @@ export default function AboutPage() {
             <h2 className="font-display text-2xl font-semibold">{p.name}</h2>
             <p className="text-accent text-sm">{p.role}</p>
             <p className="text-muted mt-3 leading-relaxed">{p.bio}</p>
+            <a
+              href={`https://www.instagram.com/${p.instagram}/`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={ABOUT.instagramLabel(p.instagram)}
+              className="btn-ghost mt-5 !py-1.5"
+            >
+              <AtSign className="text-accent size-4" /> {p.instagram}
+            </a>
           </article>
         ))}
       </section>

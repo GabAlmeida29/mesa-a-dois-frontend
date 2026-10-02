@@ -28,3 +28,7 @@ export const moneyField = z
 export const emptyToNull = (v: string | undefined | null) => (v && v.trim() !== '' ? v.trim() : null);
 export const numberToField = (v: number | null | undefined) =>
   v === null || v === undefined ? '' : String(v);
+
+export function fieldErrorFrom(details: Record<string, string[]> | undefined, field: string) {
+  return details?.[field]?.[0];
+}

@@ -1,9 +1,9 @@
 # Mesa a Dois — Web
 
-Front-end do **Mesa a Dois**, o diário gastronômico de Gabriel e Milena. Ele mostra os restaurantes visitados num mapa escuro e interativo, em grade com busca e filtros e em páginas de detalhe com notas e pratos. Também traz a área administrativa para cadastrar tudo.
+Front-end do **Mesa a Dois**, o diário gastronômico de Gabriel e Milena. Ele mostra os restaurantes visitados num mapa interativo (tema claro ou escuro), em grade com busca e filtros e em páginas de detalhe com notas por critério e pratos. Também traz a área administrativa para cadastrar tudo, gerenciar usuários e acompanhar os acessos ao site.
 
 - **Visitantes** só visualizam.
-- **Gabriel e Milena** entram com senha + código 2FA e passam a ver as ações de criar, editar e excluir.
+- **Usuários logados** (todos administradores) entram com senha + código 2FA e passam a ver as ações de criar, editar e excluir, além de "Minha conta", "Usuários" e "Acessos".
 
 ---
 
@@ -14,16 +14,18 @@ Front-end do **Mesa a Dois**, o diário gastronômico de Gabriel e Milena. Ele m
 3. [Estrutura de pastas](#estrutura-de-pastas)
 4. [Como o front conversa com a API](#como-o-front-conversa-com-a-api)
 5. [Autenticação no front](#autenticação-no-front)
-6. [Mapa](#mapa)
-7. [Cadastro de restaurante](#cadastro-de-restaurante)
-8. [Busca, filtros e ordenação](#busca-filtros-e-ordenação)
-9. [Design system](#design-system)
-10. [Textos e personalização](#textos-e-personalização)
-11. [Segurança (headers e CSP)](#segurança-headers-e-csp)
-12. [Variáveis de ambiente](#variáveis-de-ambiente)
-13. [Rodando localmente](#rodando-localmente)
-14. [Scripts](#scripts)
-15. [Build e Docker](#build-e-docker)
+6. [Área administrativa](#área-administrativa)
+7. [Mapa](#mapa)
+8. [Cadastro de restaurante](#cadastro-de-restaurante)
+9. [Busca, filtros e ordenação](#busca-filtros-e-ordenação)
+10. [Analytics](#analytics)
+11. [Design system](#design-system)
+12. [Textos e personalização](#textos-e-personalização)
+13. [Segurança (headers e CSP)](#segurança-headers-e-csp)
+14. [Variáveis de ambiente](#variáveis-de-ambiente)
+15. [Rodando localmente](#rodando-localmente)
+16. [Scripts](#scripts)
+17. [Build e Docker](#build-e-docker)
 
 ---
 
@@ -35,7 +37,7 @@ Front-end do **Mesa a Dois**, o diário gastronômico de Gabriel e Milena. Ele m
 | Estilo        | Tailwind CSS 4 (tokens em `@theme`, utilitários próprios com `@utility`)                                           |
 | Formulários   | React Hook Form + Zod                                                                                              |
 | Mapa          | Leaflet + React-Leaflet, com o mapa base **vetorial** desenhado pelo MapLibre GL (`@maplibre/maplibre-gl-leaflet`) |
-| Dados do mapa | OpenFreeMap (tiles vetoriais, gratuito, sem chave)                                                                 |
+| Dados do mapa | OpenFreeMap (tiles vetoriais, gratuito, sem chave): estilo `dark` no tema escuro e `positron` no claro             |
 | Endereços     | Photon (OpenStreetMap): autocomplete e busca reversa, sem chave                                                    |
 | Ícones        | lucide-react                                                                                                       |
 | Fontes        | Inter e Fraunces, self-hosted via `@fontsource-variable` (o build não depende de rede)                             |
@@ -49,13 +51,19 @@ Front-end do **Mesa a Dois**, o diário gastronômico de Gabriel e Milena. Ele m
 | --------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `/`                         | público | Mapa com um pin por restaurante (com a foto/logo) e estatísticas: total de restaurantes, pratos, cidades e nota média. O popup mostra foto, categoria, cidade, faixa de preço, data, nota e link para o detalhe |
 | `/restaurantes`             | público | Grade de cards com busca, **filtros** e ordenação. Logado, cada card ganha editar/excluir                                                                                                                       |
-| `/restaurantes/[id]`        | público | Foto em destaque, notas do Gabriel e da Milena, média, "voltaríamos?", opinião, pratos (foto, preço, notas) e mini-mapa com link para o Google Maps (busca pelo endereço)                                       |
+| `/restaurantes/[id]`        | público | Foto em destaque, nota geral com uma barra por critério (`RatingSummary`), "voltaríamos?", opinião, pratos (foto, preço, notas) e mini-mapa com link para o Google Maps (busca pelo endereço)                   |
 | `/restaurantes/novo`        | admin   | Cadastro de restaurante                                                                                                                                                                                         |
 | `/restaurantes/[id]/editar` | admin   | Edição                                                                                                                                                                                                          |
-| `/login`                    | público | Login em duas etapas: e-mail + senha, depois o código do app autenticador                                                                                                                                       |
-| `/sobre`                    | público | Apresentação do casal, com fotos, e de como eles avaliam                                                                                                                                                        |
+| `/login`                    | público | Login em duas etapas: e-mail + senha, depois o código do app autenticador. Conta sem 2FA vê o QR code para ativar ali mesmo                                                                                     |
+| `/sobre`                    | público | Apresentação do casal, com fotos, botão do Instagram de cada um (`@gabalmeid29`, `@mih_denardi`) e como eles avaliam                                                                                            |
+| `/privacidade`              | público | Privacidade e termos de uso (LGPD): natureza das avaliações, dados coletados, analytics sem cookies e contato                                                                                                   |
+| `/conta`                    | admin   | Minha conta: perfil (nome), trocar senha, reconfigurar o 2FA com QR code (troca de celular) e sair dos outros dispositivos                                                                                      |
+| `/admin/usuarios`           | admin   | Gestão de usuários: listar, criar (com gerador de senha forte), editar, redefinir senha, resetar 2FA, desbloquear e excluir                                                                                     |
+| `/admin/acessos`            | admin   | Painel de acessos do site (ver [Analytics](#analytics))                                                                                                                                                         |
 
 As páginas de admin ficam dentro do `AdminGuard`, que redireciona para `/login` quando não há sessão. Mesmo assim, **quem protege de fato é a API**: toda escrita exige sessão válida.
+
+O rodapé de todas as páginas traz o aviso de que as avaliações são **opiniões pessoais** e o link "Privacidade e termos".
 
 ---
 
@@ -66,30 +74,38 @@ web/
 ├── public/about/                 # fotos do "Sobre nós"
 ├── src/
 │   ├── app/                      # rotas (App Router)
-│   │   ├── layout.tsx            # fontes, providers (Auth/Toast), header e footer
-│   │   ├── globals.css           # tokens de cor, utilitários (btn, card, input, select) e tema do Leaflet
+│   │   ├── layout.tsx            # fontes, script de tema, providers (Theme/Auth/Toast), header, footer e tracker
+│   │   ├── globals.css           # tokens de cor (escuro e claro), utilitários (btn, card, input, select) e tema do Leaflet
 │   │   ├── page.tsx              # mapa + estatísticas
 │   │   ├── restaurantes/         # grade, detalhe, novo, editar
-│   │   ├── login/ · sobre/ · not-found.tsx
+│   │   ├── admin/usuarios/       # gestão de usuários
+│   │   ├── admin/acessos/        # painel de analytics
+│   │   ├── conta/                # minha conta
+│   │   ├── login/ · sobre/ · privacidade/ · not-found.tsx
 │   ├── components/
-│   │   ├── Header.tsx · UserMenu.tsx · UserAvatar.tsx · Footer.tsx
+│   │   ├── Header.tsx · UserMenu.tsx · UserAvatar.tsx · Footer.tsx · ThemeSwitcher.tsx
 │   │   ├── RestaurantCard.tsx · RestaurantFilters.tsx · RatingBadge.tsx · RatingSummary.tsx
-│   │   ├── RestaurantForm.tsx · AddressAutocomplete.tsx · ImageUpload.tsx
+│   │   ├── RestaurantForm.tsx · ScoreInput.tsx · AddressAutocomplete.tsx · ImageUpload.tsx
+│   │   ├── TwoFactorEnrollment.tsx · PasswordField.tsx · AnalyticsTracker.tsx
 │   │   ├── DishCard.tsx · DishForm.tsx
 │   │   ├── Modal.tsx · ConfirmDialog.tsx · States.tsx · AdminGuard.tsx
 │   │   └── map/
 │   │       ├── index.ts           # carrega os mapas só no cliente (next/dynamic, ssr: false)
 │   │       ├── RestaurantMap.tsx  # mapa público com pins e popups
 │   │       ├── LocationPicker.tsx # mapa do formulário (clique/arraste o pin)
-│   │       ├── BaseTiles.tsx      # camada vetorial MapLibre dentro do Leaflet
-│   │       ├── map-style.ts       # ajusta as cores do estilo "dark" à paleta do site
+│   │       ├── VisitorsMap.tsx    # mapa de cidades do painel de acessos
+│   │       ├── BaseTiles.tsx      # camada vetorial MapLibre dentro do Leaflet (troca com o tema)
+│   │       ├── map-style.ts       # ajusta as cores dos estilos "dark" e "positron" à paleta do site
 │   │       └── leaflet-utils.ts   # ícones dos pins
 │   ├── constants/
-│   │   ├── texts.ts              # TODOS os textos do site + lista de categorias
-│   │   └── config.ts             # centro do mapa, URLs do mapa e do geocoder
-│   ├── contexts/                 # AuthContext (sessão) e ToastContext (avisos)
+│   │   ├── texts.ts              # TODOS os textos do site + categorias e critérios de avaliação
+│   │   └── config.ts             # centro do mapa, URLs do mapa (claro/escuro) e do geocoder
+│   ├── contexts/                 # AuthContext (sessão), ThemeContext (tema) e ToastContext (avisos)
 │   └── lib/
 │       ├── api.ts                # cliente HTTP da API
+│       ├── analytics.ts          # envio de eventos e rótulo dos cliques
+│       ├── theme.ts              # tipos, cores e script inline do tema
+│       ├── password.ts           # gerador de senha forte
 │       ├── geocode.ts            # autocomplete e busca reversa (Photon)
 │       ├── filters.ts            # filtros da grade (aplicação e sincronização com a URL)
 │       ├── format.ts             # datas, moeda, notas, link do Google Maps
@@ -118,31 +134,55 @@ O `lib/api.ts` centraliza as chamadas:
 
 - usa `credentials: 'same-origin'`, então o cookie vai junto automaticamente;
 - envia `X-Requested-With: mesa-a-dois`, exigido pela API em toda escrita;
-- converte erros em `ApiError` (`status`, `message`, `details`, `mfaRequired`, `mfaSetupRequired`);
+- converte erros em `ApiError` (`status`, `message`, `details`, `mfaRequired`, `mfaSetupRequired`, `enrollment`);
 - em qualquer `401` dispara o evento `mesa:unauthorized`, e o `AuthContext` derruba o estado de login.
 
 ---
 
 ## Autenticação no front
 
-- **Sem token no JavaScript**: a sessão vive num cookie `httpOnly` que o código do site nem consegue ler. Nada é guardado em `localStorage`.
+- **Sem token no JavaScript**: a sessão vive num cookie `httpOnly` que o código do site nem consegue ler. Nada da sessão é guardado em `localStorage` (lá fica só a preferência de tema).
 - Ao carregar, o `AuthContext` chama `GET /api/auth/me` para saber se há sessão. `isAdmin` libera os botões de ação.
 - **Fluxo do login** (`/login`):
   1. o usuário envia e-mail e senha;
   2. se a API responder `mfaRequired`, a tela pede o código de 6 dígitos (com `autocomplete="one-time-code"`);
-  3. se responder `mfaSetupRequired`, a tela mostra o comando de terminal para ativar o 2FA;
+  3. se responder `mfaSetupRequired`, a tela mostra a ativação do 2FA (`TwoFactorEnrollment`): QR code, chave manual com botão de copiar e o campo do código. O código é enviado para `POST /api/auth/2fa/enroll`, que já cria a sessão;
   4. se responder `429`, mostra o aviso de bloqueio temporário.
-- **Menu do usuário**: o avatar com o nome abre um popover com "Novo restaurante" e "Sair". Ele fecha com clique fora ou `Esc`. No celular, as mesmas opções aparecem no menu hambúrguer.
+- **Menu do usuário**: o avatar com o nome abre um popover com "Novo restaurante", "Acessos", "Usuários", "Minha conta" e "Sair". Ele fecha com clique fora ou `Esc`. No celular, as mesmas opções aparecem no menu hambúrguer.
 - O avatar usa a foto do "Sobre nós" quando o nome bate (Gabriel/Milena). Caso contrário, mostra a inicial.
+
+---
+
+## Área administrativa
+
+Todas as páginas ficam dentro do `AdminGuard`. Ações sensíveis (criar usuário, trocar senha, resetar 2FA, excluir, reconfigurar o próprio 2FA) pedem a **senha atual** no formulário ou no modal. Quem valida de fato é a API, e senha errada conta para o bloqueio da conta.
+
+**Minha conta** (`/conta`)
+
+- perfil: altera o próprio nome (`PUT /api/auth/me`);
+- trocar senha: nova senha + senha atual. A sessão atual continua, as outras são encerradas;
+- reconfigurar 2FA: pede a senha atual, mostra um QR code novo e confirma com o código do app (útil para trocar de celular);
+- sair dos outros dispositivos (`POST /api/auth/logout-others`).
+
+**Usuários** (`/admin/usuarios`)
+
+- lista com status do 2FA, bloqueio e último login;
+- criar usuário, com **gerador de senha forte** (`PasswordField` + `lib/password.ts`, usando `crypto.getRandomValues`);
+- editar nome e e-mail;
+- redefinir senha, resetar 2FA (o usuário ativa de novo no próximo login), desbloquear e excluir;
+- não dá para excluir a si mesmo nem o último usuário.
+
+As senhas seguem a política da API: 12+ caracteres, 3 tipos entre minúsculas, maiúsculas, números e símbolos, e nenhum termo óbvio.
 
 ---
 
 ## Mapa
 
-- **Base vetorial**: o estilo `dark` do OpenFreeMap é carregado uma única vez e ajustado em `map-style.ts`, que só troca cores:
-  - fundo grafite e água azulada;
-  - áreas verdes discretas;
-  - ruas mais visíveis e rótulos com contraste.
+- **Base vetorial que segue o tema**: no escuro usa o estilo `dark` do OpenFreeMap, no claro o `positron`. Cada estilo é carregado uma única vez e ajustado em `map-style.ts`, que só troca cores:
+  - escuro: fundo grafite, água azulada, áreas verdes discretas, ruas mais visíveis e rótulos com contraste;
+  - claro: fundo creme, água azul-clara, verdes suaves e ruas brancas, no tom pastel do site.
+
+  Ao trocar o tema, o `BaseTiles` substitui a camada sem recarregar a página.
 
   Por ser vetorial e desenhado em WebGL, fica nítido em qualquer zoom (até 19).
 
@@ -152,7 +192,9 @@ O `lib/api.ts` centraliza as chamadas:
 - **Sem barra de atribuição no mapa**: os créditos exigidos pela licença (OpenStreetMap, OpenMapTiles, OpenFreeMap) ficam discretos no rodapé do site.
 - **Só no cliente**: Leaflet e MapLibre acessam `window`, por isso os mapas são carregados com `next/dynamic` e `ssr: false`.
 
-Para trocar o visual, edite as cores em `PALETTE` (`map-style.ts`) ou aponte `NEXT_PUBLIC_MAP_STYLE_URL` para outro estilo, como `positron` ou `liberty` do OpenFreeMap.
+O painel de acessos usa o mesmo mapa base (`VisitorsMap`), com um círculo por cidade proporcional ao número de visitantes.
+
+Para trocar o visual, edite as cores em `PALETTES` (`map-style.ts`) ou aponte `NEXT_PUBLIC_MAP_STYLE_URL` (escuro) e `NEXT_PUBLIC_MAP_STYLE_URL_LIGHT` (claro) para outro estilo, como `liberty` do OpenFreeMap.
 
 ---
 
@@ -180,13 +222,26 @@ O formulário (`RestaurantForm.tsx`) tem três blocos.
 
 **3. Avaliação**
 
-- nota do Gabriel e da Milena (0–10, aceita vírgula, passo de 0,5);
+- 7 critérios com um slider cada (`ScoreInput`), de 0 a 10 em passos de 0,5:
+
+  | Critério        | O que avalia                       |
+  | --------------- | ---------------------------------- |
+  | Comida          | sabor, qualidade e apresentação    |
+  | Atendimento     | cordialidade e atenção da equipe   |
+  | Ambiente        | decoração, música e clima do lugar |
+  | Limpeza         | mesas, louças e banheiros          |
+  | Conforto        | cadeiras, espaço e temperatura     |
+  | Custo-benefício | se o preço fez sentido             |
+  | Tempo de espera | 10 = rápido, sem demora            |
+
+- todo critério começa **sem nota** e pode voltar a ficar vazio ("limpar"). Critérios vazios não entram na média;
+- a **nota geral prevista** (média dos critérios preenchidos) aparece ao vivo enquanto os sliders mudam;
 - opinião;
 - "voltaríamos".
 
 A validação usa **Zod no front** (feedback imediato) e é repetida **na API** (a que vale de verdade).
 
-Os pratos são criados e editados num modal (`DishForm`) na página do restaurante.
+Os pratos são criados e editados num modal (`DishForm`) na página do restaurante e continuam com a nota do Gabriel e da Milena.
 
 ---
 
@@ -209,9 +264,32 @@ Na página `/restaurantes`:
 
 ---
 
+## Analytics
+
+O `AnalyticsTracker` (montado no `layout.tsx`) envia eventos para `POST /api/analytics/collect` pelo `lib/analytics.ts`. Não usa cookie nem serviço de terceiros.
+
+- **Visualização**: a cada troca de rota. O `document.referrer` vai só na primeira.
+- **Clique**: em `a`, `button`, `summary`, `[role=menuitem]`, `[role=radio]` e `[data-track]`. O rótulo sai, nessa ordem, de `data-track`, `aria-label`, `title` ou do texto do elemento (até 80 caracteres).
+- **Opt-out**: nada é enviado quando o navegador tem **Do Not Track** ou **Global Privacy Control** ligados. Elementos dentro de `[data-track-ignore]` não geram clique (o próprio painel de acessos usa isso).
+- O envio usa `keepalive` e ignora erros, então nunca atrapalha a navegação.
+
+O painel (`/admin/acessos`) mostra:
+
+- visitantes, visualizações, cliques e páginas por visitante;
+- visitas por dia;
+- páginas mais vistas e onde mais clicam;
+- mapa de cidades, países e cidades;
+- dispositivos, navegadores e sistemas;
+- origem (sites que trouxeram visitas);
+- últimos acessos.
+
+Filtros: período de **7, 30, 90 dias ou 12 meses** e "Incluir nossos acessos" (por padrão os acessos de quem está logado ficam de fora).
+
+---
+
 ## Design system
 
-- **Tema escuro "luz de vela"**: os tokens ficam no bloco `@theme` do `globals.css`.
+- **Dois temas**: escuro "luz de vela" (padrão) e claro em tons pastel quentes. Os tokens do escuro ficam no bloco `@theme` do `globals.css`, e o claro sobrescreve os mesmos tokens em `:root[data-theme='light']`.
 
   | Token                          | Uso                              |
   | ------------------------------ | -------------------------------- |
@@ -220,6 +298,10 @@ Na página `/restaurantes`:
   | `gold`                         | preços                           |
   | `good` / `bad`                 | notas altas/baixas, sucesso/erro |
 
+- **Troca de tema** (`ThemeSwitcher`, no header e no menu do celular): Sistema, Claro ou Escuro.
+  - a preferência fica em `localStorage` (`mesa-theme`); "Sistema" segue o `prefers-color-scheme` e acompanha mudanças ao vivo;
+  - um script inline em `lib/theme.ts` roda antes da página pintar e aplica `data-theme` no `<html>`, evitando o "flash" do tema errado;
+  - o `ThemeContext` também atualiza o `theme-color` do navegador.
 - **Utilitários** (`@utility`): `card`, `btn-primary`, `btn-ghost`, `btn-danger`, `input`, `select` (seta própria, sem visual nativo), `label`, `field-error`.
 - **Tipografia**: Fraunces nos títulos, Inter no texto.
 - **Responsivo**: a grade vai de 1 a 4 colunas, o menu vira hambúrguer no celular e os mapas ajustam a altura.
@@ -233,14 +315,18 @@ Na página `/restaurantes`:
 
 ## Textos e personalização
 
-| O que mudar                                                      | Onde                                                                          |
-| ---------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Qualquer texto do site (títulos, botões, mensagens, "Sobre nós") | `src/constants/texts.ts`                                                      |
-| Lista de categorias de cozinha                                   | `CUISINES` em `texts.ts`                                                      |
-| Fotos do "Sobre nós"                                             | `public/about/gabriel.webp` e `milena.webp` (campo `photo` em `ABOUT.people`) |
-| Cores do site                                                    | `@theme` em `src/app/globals.css`                                             |
-| Cores do mapa                                                    | `PALETTE` em `src/components/map/map-style.ts`                                |
-| Centro e zoom inicial do mapa                                    | `MAP_DEFAULT_CENTER` / `MAP_DEFAULT_ZOOM` em `src/constants/config.ts`        |
+| O que mudar                                                      | Onde                                                                                         |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Qualquer texto do site (títulos, botões, mensagens, "Sobre nós") | `src/constants/texts.ts`                                                                     |
+| Lista de categorias de cozinha                                   | `CUISINES` em `texts.ts`                                                                     |
+| Nomes e descrições dos critérios de avaliação                    | `CRITERIA` em `texts.ts`                                                                     |
+| Textos de conta, usuários, acessos, tema, segurança e 2FA        | `ACCOUNT`, `USERS`, `ANALYTICS`, `THEME`, `SECURITY`, `TWO_FACTOR` em `texts.ts`             |
+| Página de privacidade e termos                                   | `LEGAL` em `texts.ts`                                                                        |
+| Aviso do rodapé ("opiniões pessoais")                            | `APP.disclaimer` em `texts.ts`                                                               |
+| Fotos e Instagram do "Sobre nós"                                 | `public/about/gabriel.webp` e `milena.webp` (campos `photo` e `instagram` em `ABOUT.people`) |
+| Cores do site                                                    | `@theme` (escuro) e `:root[data-theme='light']` (claro) em `src/app/globals.css`             |
+| Cores do mapa                                                    | `PALETTES` em `src/components/map/map-style.ts`                                              |
+| Centro e zoom inicial do mapa                                    | `MAP_DEFAULT_CENTER` / `MAP_DEFAULT_ZOOM` em `src/constants/config.ts`                       |
 
 ---
 
@@ -258,7 +344,9 @@ O `next.config.ts` aplica em todas as páginas:
 - **Strict-Transport-Security** (produção), **X-Frame-Options: DENY**, **X-Content-Type-Options: nosniff**, **Referrer-Policy**, **Permissions-Policy** (só geolocalização, e só no próprio site) e **Cross-Origin-Opener-Policy**.
 - `poweredByHeader: false`.
 
-> `script-src` inclui `'unsafe-inline'` porque o Next injeta scripts inline de hidratação. No modo dev entra também `'unsafe-eval'`, exigido pelo recarregamento automático (HMR).
+> `script-src` inclui `'unsafe-inline'` porque o Next injeta scripts inline de hidratação (o script de tema também é inline). No modo dev entra também `'unsafe-eval'`, exigido pelo recarregamento automático (HMR).
+
+O QR code do 2FA chega como data URL (`data:image/png`), já permitido em `img-src`.
 
 ---
 
@@ -269,7 +357,8 @@ Copie `.env.example` para `.env.local`. Todas são opcionais.
 | Variável                           | Padrão                          | Descrição                                                      |
 | ---------------------------------- | ------------------------------- | -------------------------------------------------------------- |
 | `API_INTERNAL_URL`                 | `http://localhost:3333`         | para onde o Next encaminha `/api` e `/uploads` (lida no build) |
-| `NEXT_PUBLIC_MAP_STYLE_URL`        | OpenFreeMap `dark`              | estilo vetorial do mapa                                        |
+| `NEXT_PUBLIC_MAP_STYLE_URL`        | OpenFreeMap `dark`              | estilo vetorial do mapa no tema escuro                         |
+| `NEXT_PUBLIC_MAP_STYLE_URL_LIGHT`  | OpenFreeMap `positron`          | estilo vetorial do mapa no tema claro                          |
 | `NEXT_PUBLIC_MAP_HOSTS`            | `https://tiles.openfreemap.org` | hosts do mapa liberados na CSP (separados por espaço)          |
 | `NEXT_PUBLIC_GEOCODER_URL`         | Photon `/api/`                  | autocomplete de endereço                                       |
 | `NEXT_PUBLIC_REVERSE_GEOCODER_URL` | Photon `/reverse`               | busca reversa                                                  |

@@ -43,7 +43,7 @@ export function RestaurantCard({ restaurant: r, isAdmin, onDelete }: Props) {
             {r.name.trim().charAt(0).toUpperCase()}
           </span>
         )}
-        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[var(--image-shade)] to-transparent" />
         <div className="bg-bg/85 absolute top-3 right-3 rounded-full backdrop-blur">
           <RatingBadge value={r.averageRating} />
         </div>

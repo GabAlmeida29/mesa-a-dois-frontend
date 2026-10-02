@@ -1,4 +1,14 @@
-import type { Dish, DishInput, Restaurant, RestaurantInput, SortOption, User } from './types';
+import type {
+  AnalyticsSummary,
+  Dish,
+  DishInput,
+  Enrollment,
+  ManagedUser,
+  Restaurant,
+  RestaurantInput,
+  SortOption,
+  User,
+} from './types';
 
 export class ApiError extends Error {
   constructor(
@@ -7,6 +17,7 @@ export class ApiError extends Error {
     public details?: Record<string, string[]>,
     public mfaRequired = false,
     public mfaSetupRequired = false,
+    public enrollment?: Enrollment,
   ) {
     super(message);
   }
@@ -32,10 +43,17 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
       body.details,
       !!body.mfaRequired,
       !!body.mfaSetupRequired,
+      body.enrollment,
     );
   }
   return body as T;
 }
+
+const json = (method: string, data?: unknown): RequestInit => ({
+  method,
+  ...(data === undefined ? {} : { body: JSON.stringify(data) }),
+});
+const userPath = (id: string, suffix = '') => `/api/users/${encodeURIComponent(id)}${suffix}`;
 
 export const api = {
   login: (email: string, password: string, code?: string) =>
@@ -45,6 +63,26 @@ export const api = {
     }),
   logout: () => request<void>('/api/auth/logout', { method: 'POST' }),
   me: () => request<{ user: User }>('/api/auth/me'),
+  updateMe: (name: string) => request<{ user: User }>('/api/auth/me', json('PUT', { name })),
+  enrollTwoFactor: (enrollmentToken: string, code: string) =>
+    request<{ user: User }>('/api/auth/2fa/enroll', json('POST', { enrollmentToken, code })),
+  startTwoFactorSetup: (currentPassword: string) =>
+    request<Enrollment>('/api/auth/2fa/setup', json('POST', { currentPassword })),
+  logoutOthers: () => request<void>('/api/auth/logout-others', json('POST')),
+  listUsers: () => request<ManagedUser[]>('/api/users'),
+  createUser: (data: { name: string; email: string; password: string; currentPassword: string }) =>
+    request<ManagedUser>('/api/users', json('POST', data)),
+  updateUser: (id: string, data: { name?: string; email?: string }) =>
+    request<ManagedUser>(userPath(id), json('PUT', data)),
+  setUserPassword: (id: string, password: string, currentPassword: string) =>
+    request<void>(userPath(id, '/password'), json('POST', { password, currentPassword })),
+  resetUserTwoFactor: (id: string, currentPassword: string) =>
+    request<void>(userPath(id, '/reset-2fa'), json('POST', { currentPassword })),
+  unlockUser: (id: string) => request<void>(userPath(id, '/unlock'), json('POST')),
+  deleteUser: (id: string, currentPassword: string) =>
+    request<void>(userPath(id), json('DELETE', { currentPassword })),
+  analyticsSummary: (days: number, includeAdmin: boolean) =>
+    request<AnalyticsSummary>(`/api/analytics/summary?days=${days}&includeAdmin=${includeAdmin}`),
   listRestaurants: (params: { q?: string; sort?: SortOption } = {}) => {
     const qs = new URLSearchParams();
     if (params.q) qs.set('q', params.q);

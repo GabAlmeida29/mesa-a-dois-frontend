@@ -10,6 +10,8 @@ interface AuthState {
   loading: boolean;
   isAdmin: boolean;
   login: (email: string, password: string, code?: string) => Promise<void>;
+  enroll: (enrollmentToken: string, code: string) => Promise<void>;
+  setUser: (user: User | null) => void;
   logout: () => Promise<void>;
 }
 
@@ -40,14 +42,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(u);
   }, []);
 
+  const enroll = useCallback(async (enrollmentToken: string, code: string) => {
+    const { user: u } = await api.enrollTwoFactor(enrollmentToken, code);
+    setUser(u);
+  }, []);
+
   const logout = useCallback(async () => {
     await api.logout().catch(() => undefined);
     setUser(null);
   }, []);
 
   const value = useMemo(
-    () => ({ user, loading, isAdmin: !!user, login, logout }),
-    [user, loading, login, logout],
+    () => ({ user, loading, isAdmin: !!user, login, enroll, setUser, logout }),
+    [user, loading, login, enroll, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

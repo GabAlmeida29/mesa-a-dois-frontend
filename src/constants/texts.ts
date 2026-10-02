@@ -1,8 +1,11 @@
+import type { ScoreKey } from '@/lib/types';
+
 export const APP = {
   name: 'Mesa a Dois',
   description:
     'Diário gastronômico de Gabriel e Milena: os lugares que visitamos, o que comemos e o que achamos.',
   footer: 'Feito com fome e carinho por Gabriel & Milena',
+  disclaimer: 'As avaliações são opiniões pessoais sobre a nossa experiência na data da visita.',
   mapCredits: 'Mapa ©',
 } as const;
 
@@ -13,8 +16,19 @@ export const NAV = {
   login: 'Entrar',
   logout: 'Sair',
   newRestaurant: 'Novo restaurante',
+  account: 'Minha conta',
+  users: 'Usuários',
+  analytics: 'Acessos',
+  privacy: 'Privacidade e termos',
   openMenu: 'Abrir menu',
   closeMenu: 'Fechar menu',
+} as const;
+
+export const THEME = {
+  label: 'Tema',
+  system: 'Sistema',
+  light: 'Claro',
+  dark: 'Escuro',
 } as const;
 
 export const HOME = {
@@ -75,7 +89,10 @@ export const RESTAURANTS = {
   back: 'Voltar',
   ratingGabriel: 'Gabriel',
   ratingMilena: 'Milena',
-  average: 'Média',
+  average: 'Nota geral',
+  averageHint: 'Média dos critérios avaliados',
+  criteriaTitle: 'Avaliação por critério',
+  notRated: 'Ainda sem avaliação por critério.',
   review: 'Nossa opinião',
   noReview: 'Sem comentários ainda.',
   location: 'Localização',
@@ -128,6 +145,16 @@ export const CUISINES = [
   'Outra',
 ] as const;
 
+export const CRITERIA: ReadonlyArray<{ key: ScoreKey; label: string; hint: string }> = [
+  { key: 'scoreFood', label: 'Comida', hint: 'Sabor, qualidade e apresentação' },
+  { key: 'scoreService', label: 'Atendimento', hint: 'Cordialidade e atenção da equipe' },
+  { key: 'scoreAmbience', label: 'Ambiente', hint: 'Decoração, música e clima do lugar' },
+  { key: 'scoreCleanliness', label: 'Limpeza', hint: 'Mesas, louças e banheiros' },
+  { key: 'scoreComfort', label: 'Conforto', hint: 'Cadeiras, espaço e temperatura' },
+  { key: 'scoreValue', label: 'Custo-benefício', hint: 'Se o preço fez sentido' },
+  { key: 'scoreWait', label: 'Tempo de espera', hint: '10 = rápido, sem demora' },
+];
+
 export const FORM = {
   newTitle: 'Novo restaurante',
   editTitle: 'Editar restaurante',
@@ -135,6 +162,8 @@ export const FORM = {
     basic: 'Informações básicas',
     location: 'Localização',
     ratings: 'Avaliação',
+    ratingsHint:
+      'Dê uma nota de 0 a 10 para cada critério. A nota geral do restaurante é a média dos critérios preenchidos.',
   },
   fields: {
     name: 'Nome',
@@ -149,6 +178,9 @@ export const FORM = {
     logoHint: 'Logo ou foto do lugar. Ocupa o card inteiro, o topo da página e aparece no pin do mapa.',
     ratingGabriel: 'Nota do Gabriel (0–10)',
     ratingMilena: 'Nota da Milena (0–10)',
+    scoreNotRated: 'Não avaliado',
+    scoreClear: 'limpar',
+    scoreAverage: 'Nota geral prevista',
     review: 'Nossa opinião',
     reviewPlaceholder: 'Como foi a experiência? Atendimento, ambiente, o que valeu a pena…',
     wouldReturn: 'Voltaríamos a esse lugar',
@@ -206,10 +238,151 @@ export const LOGIN = {
   mfaBack: 'Voltar',
   locked: 'Muitas tentativas. Aguarde alguns minutos e tente novamente.',
   mfaSetupTitle: 'Ative a verificação em duas etapas',
-  mfaSetupText:
-    'Por segurança, o acesso exige um código do app autenticador. Peça ao administrador para ativar o 2FA da sua conta pelo terminal:',
-  mfaSetupCommand: (email: string) => `npm run user -- 2fa:enable ${email}`,
   backHome: 'Voltar para o mapa',
+} as const;
+
+export const TWO_FACTOR = {
+  intro: 'Por segurança, todo acesso pede um código do app autenticador. Configure agora em 3 passos:',
+  step1:
+    'Instale um app autenticador (Google Authenticator, Microsoft Authenticator, Authy ou o app Senhas do iPhone).',
+  step2: 'No app, toque em “+” e escaneie o QR code abaixo.',
+  step3: 'Digite o código de 6 dígitos que aparecer no app.',
+  qrAlt: 'QR code para configurar o app autenticador',
+  manualKey: 'Não consegue escanear? Digite esta chave no app:',
+  copy: 'Copiar chave',
+  copied: 'Chave copiada!',
+  code: 'Código de 6 dígitos',
+  confirm: 'Ativar e entrar',
+  confirmAccount: 'Ativar no novo app',
+  confirming: 'Verificando…',
+  expires: 'Este QR code vale por 10 minutos.',
+  done: 'Verificação em duas etapas ativada!',
+} as const;
+
+export const SECURITY = {
+  currentPassword: 'Sua senha atual',
+  currentPasswordHint: 'Por segurança, confirme a sua senha para fazer essa alteração.',
+  newPassword: 'Nova senha',
+  confirmPassword: 'Confirme a nova senha',
+  passwordMismatch: 'As senhas não conferem',
+  passwordRules:
+    'Mínimo de 12 caracteres, com pelo menos 3 tipos: minúsculas, maiúsculas, números e símbolos.',
+  generate: 'Gerar senha forte',
+  show: 'Mostrar senha',
+  hide: 'Ocultar senha',
+  required: 'Campo obrigatório',
+} as const;
+
+export const ACCOUNT = {
+  title: 'Minha conta',
+  subtitle: 'Seus dados de acesso e a segurança da sua conta.',
+  profileTitle: 'Perfil',
+  name: 'Nome',
+  email: 'E-mail',
+  saveProfile: 'Salvar nome',
+  profileSaved: 'Nome atualizado!',
+  passwordTitle: 'Trocar senha',
+  passwordSave: 'Trocar senha',
+  passwordSaved: 'Senha alterada! Os outros dispositivos foram desconectados.',
+  twoFactorTitle: 'Verificação em duas etapas',
+  twoFactorOn: 'Ativa: todo login pede o código do app autenticador.',
+  twoFactorReset: 'Trocar de celular / reconfigurar',
+  twoFactorResetHint: 'Gera um novo QR code. O app antigo para de funcionar assim que você confirmar o novo.',
+  twoFactorModal: 'Configurar novo app autenticador',
+  continue: 'Continuar',
+  sessionsTitle: 'Sessões',
+  sessionsText: 'Esqueceu a conta aberta em outro computador? Encerre todas as outras sessões.',
+  sessionsButton: 'Sair dos outros dispositivos',
+  sessionsDone: 'Outras sessões encerradas.',
+} as const;
+
+export const USERS = {
+  title: 'Usuários',
+  subtitle: 'Quem pode cadastrar e editar restaurantes. Todos têm acesso de administrador.',
+  add: 'Novo usuário',
+  name: 'Nome',
+  email: 'E-mail',
+  you: 'você',
+  twoFactorOn: '2FA ativo',
+  twoFactorPending: '2FA pendente',
+  twoFactorPendingHint: 'Vai configurar o app autenticador no próximo login.',
+  locked: 'Bloqueado',
+  lastLogin: (date: string) => `Último acesso: ${date}`,
+  neverLogged: 'Nunca acessou',
+  actions: 'Ações',
+  edit: 'Editar dados',
+  resetPassword: 'Redefinir senha',
+  resetTwoFactor: 'Resetar 2FA',
+  unlock: 'Desbloquear',
+  remove: 'Excluir',
+  createTitle: 'Novo usuário',
+  createHint:
+    'Passe a senha para a pessoa por um canal seguro. No primeiro login ela vai configurar o app autenticador.',
+  editTitle: (name: string) => `Editar ${name}`,
+  passwordTitle: (name: string) => `Nova senha para ${name}`,
+  passwordHint: 'A pessoa será desconectada de todos os dispositivos.',
+  resetTwoFactorTitle: (name: string) => `Resetar 2FA de ${name}`,
+  resetTwoFactorText:
+    'O app autenticador atual deixa de valer. No próximo login, a pessoa escaneia um novo QR code. Use se ela perdeu ou trocou de celular.',
+  removeTitle: (name: string) => `Excluir ${name}`,
+  removeText:
+    'O usuário perde o acesso imediatamente. Os restaurantes cadastrados por ele continuam no site.',
+  save: 'Salvar',
+  created: 'Usuário criado!',
+  updated: 'Dados atualizados!',
+  passwordChanged: 'Senha redefinida!',
+  twoFactorReset: '2FA resetado. Será configurado no próximo login.',
+  unlocked: 'Usuário desbloqueado.',
+  removed: 'Usuário excluído.',
+} as const;
+
+export const ANALYTICS = {
+  title: 'Acessos',
+  subtitle: 'Como as pessoas usam o site. Sem cookies e sem guardar IP.',
+  period: 'Período',
+  periods: [
+    { days: 7, label: '7 dias' },
+    { days: 30, label: '30 dias' },
+    { days: 90, label: '90 dias' },
+    { days: 365, label: '12 meses' },
+  ],
+  includeAdmin: 'Incluir nossos acessos',
+  visitors: 'Visitantes',
+  visitorsHint: 'Pessoas diferentes por dia',
+  pageviews: 'Visualizações',
+  clicks: 'Cliques',
+  perVisitor: 'Páginas por visitante',
+  dailyTitle: 'Visitas por dia',
+  pagesTitle: 'Páginas mais vistas',
+  clicksTitle: 'Onde mais clicam',
+  mapTitle: 'De onde acessam',
+  countriesTitle: 'Países',
+  citiesTitle: 'Cidades',
+  devicesTitle: 'Dispositivos',
+  browsersTitle: 'Navegadores',
+  systemsTitle: 'Sistemas',
+  referrersTitle: 'Vieram de',
+  recentTitle: 'Últimos acessos',
+  views: (n: number) => `${n} ${n === 1 ? 'visualização' : 'visualizações'}`,
+  visitorsCount: (n: number) => `${n} ${n === 1 ? 'visitante' : 'visitantes'}`,
+  clicksCount: (n: number) => `${n} ${n === 1 ? 'clique' : 'cliques'}`,
+  onPage: (page: string) => `em ${page}`,
+  empty: 'Nenhum acesso registrado nesse período ainda.',
+  unknown: 'Desconhecido',
+  direct: 'Acesso direto',
+  pageview: 'abriu',
+  click: 'clicou em',
+  devices: { desktop: 'Computador', mobile: 'Celular', tablet: 'Tablet' } as Record<string, string>,
+  pages: {
+    '/': 'Mapa (início)',
+    '/restaurantes': 'Restaurantes',
+    '/sobre': 'Sobre nós',
+    '/login': 'Login',
+    '/privacidade': 'Privacidade e termos',
+  } as Record<string, string>,
+  geoCredit: 'Localização aproximada por IP (base DB-IP)',
+  refresh: 'Atualizar',
+  editPage: (name: string) => `Editar: ${name}`,
 } as const;
 
 export const ABOUT = {
@@ -220,24 +393,90 @@ export const ABOUT = {
     {
       name: 'Gabriel',
       photo: '/about/gabriel.webp',
+      instagram: 'gabalmeid29',
       role: 'Desenvolvedor & provador oficial de sobremesas',
       bio: 'Desenvolvedor, curioso por natureza. Construiu este site e não recusa um bom hambúrguer artesanal — nem uma segunda sobremesa.',
     },
     {
       name: 'Milena',
       photo: '/about/milena.webp',
+      instagram: 'mih_denardi',
       role: 'Psicóloga & crítica exigente',
       bio: 'Repara em cada detalhe: do atendimento ao empratamento. É quem escolhe os lugares novos e quem dá a palavra final sobre voltar ou não.',
     },
   ],
   howTitle: 'Como avaliamos',
   how: [
-    { title: 'Notas separadas', text: 'Cada um dá sua nota de 0 a 10. A média aparece em destaque.' },
-    { title: 'O que comemos', text: 'Registramos os pratos com foto, preço e nota individual.' },
+    {
+      title: 'Nota por critério',
+      text: 'Comida, atendimento, ambiente, limpeza, conforto, custo-benefício e tempo de espera, de 0 a 10. A nota geral é a média.',
+    },
+    { title: 'O que comemos', text: 'Cada prato ganha foto, preço e a nota do Gabriel e da Milena.' },
     { title: 'Voltaríamos?', text: 'A pergunta que resume tudo: vale a pena voltar?' },
   ],
+  instagramLabel: (handle: string) => `Instagram de @${handle}`,
   ctaTitle: 'Explore nosso mapa',
   ctaButton: 'Ver o mapa',
+} as const;
+
+export const LEGAL = {
+  title: 'Privacidade e termos de uso',
+  updatedAt: 'Atualizado em 2 de outubro de 2026',
+  intro:
+    'Este é um site pessoal, sem fins comerciais e sem publicidade, mantido por Gabriel e Milena. Aqui explicamos o que são as avaliações, quais dados o site usa e como falar com a gente.',
+  sections: [
+    {
+      title: 'Sobre as avaliações',
+      paragraphs: [
+        'Todas as notas e comentários são opiniões pessoais e subjetivas sobre a nossa experiência na data da visita. Restaurantes mudam de cardápio, equipe e preços, então a sua experiência pode ser diferente.',
+        'As avaliações não são recomendação profissional, análise técnica nem fiscalização sanitária.',
+        'Nomes, marcas e logotipos dos estabelecimentos pertencem aos seus titulares e aparecem aqui apenas para identificar o lugar avaliado.',
+        'Se você é responsável por um estabelecimento e encontrou alguma informação incorreta, fale com a gente: corrigimos ou removemos o conteúdo.',
+      ],
+    },
+    {
+      title: 'Dados de quem visita o site',
+      paragraphs: [
+        'Você não precisa de cadastro para navegar e o site não usa cookies de rastreamento ou de publicidade.',
+        'Para entender como o site é usado, registramos estatísticas de acesso: a página aberta, o texto do botão ou link clicado, o site de onde você veio, o tipo de dispositivo, navegador e sistema, e uma localização aproximada (cidade e país) calculada a partir do endereço IP no momento do acesso.',
+        'O endereço IP não é armazenado. Para contar visitantes únicos usamos um código irreversível que muda todos os dias, então não conseguimos identificar você nem acompanhar suas visitas ao longo do tempo.',
+        'Se o seu navegador envia o sinal “Do Not Track” ou “Global Privacy Control”, nenhuma estatística é registrada.',
+        'Esses dados são usados apenas por nós, com base no legítimo interesse de melhorar o site (art. 7º, IX, da LGPD), e são apagados automaticamente após 13 meses.',
+      ],
+    },
+    {
+      title: 'Área administrativa',
+      paragraphs: [
+        'Só Gabriel e Milena têm acesso de edição. O login usa um cookie de sessão estritamente necessário, protegido (httpOnly) e apagado quando o navegador é fechado.',
+      ],
+    },
+    {
+      title: 'Serviços de terceiros',
+      paragraphs: [
+        'Os mapas são carregados do OpenFreeMap, com dados do OpenStreetMap. Como em qualquer site que exibe conteúdo externo, o seu navegador se conecta a esses servidores e eles recebem o seu endereço IP.',
+        'A localização aproximada por IP é feita no nosso próprio servidor com a base IP to City Lite da DB-IP (licença CC BY 4.0), sem enviar dados a terceiros.',
+        'Os links para o Instagram levam a um serviço externo, com política de privacidade própria.',
+      ],
+    },
+    {
+      title: 'Fotos',
+      paragraphs: [
+        'As fotos foram tiradas por nós. Se você aparece em alguma imagem e quer que ela seja removida, fale com a gente.',
+      ],
+    },
+    {
+      title: 'Seus direitos',
+      paragraphs: [
+        'Pela Lei Geral de Proteção de Dados (Lei 13.709/2018) você pode pedir informações, correção ou exclusão de dados pessoais. Como não guardamos IP nem identificadores permanentes, em geral não há como associar as estatísticas a uma pessoa, mas responderemos qualquer pedido.',
+      ],
+    },
+  ],
+  contactTitle: 'Contato',
+  contactText:
+    'Para pedidos de correção, remoção de conteúdo ou dúvidas sobre privacidade, mande uma mensagem no Instagram:',
+  changesText:
+    'Podemos atualizar este texto quando o site mudar. A data no topo indica a última atualização.',
+  credits: 'Créditos',
 } as const;
 
 export const COMMON = {

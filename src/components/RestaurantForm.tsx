@@ -6,16 +6,23 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState } from 'react';
 import { Building2, CheckCircle2, Loader2, MapPin, Save } from 'lucide-react';
-import { CUISINES, FORM } from '@/constants/texts';
+import { CRITERIA, CUISINES, FORM } from '@/constants/texts';
 import { MAP_DEFAULT_CENTER } from '@/constants/config';
 import { api, ApiError } from '@/lib/api';
 import { reverseGeocode } from '@/lib/geocode';
-import { emptyToNull, numberToField, ratingField, toNumberOrNull } from '@/lib/form-utils';
-import type { GeocodeSuggestion, Restaurant, RestaurantInput } from '@/lib/types';
+import { emptyToNull } from '@/lib/form-utils';
+import { formatRating } from '@/lib/format';
+import type { GeocodeSuggestion, Restaurant, RestaurantInput, ScoreKey } from '@/lib/types';
 import { useToast } from '@/contexts/ToastContext';
 import { ImageUpload } from './ImageUpload';
 import { AddressAutocomplete } from './AddressAutocomplete';
 import { LocationPicker } from './map';
+import { ScoreInput } from './ScoreInput';
+
+const score = z.number().min(0).max(10).nullable();
+const scoresSchema = z.object(
+  Object.fromEntries(CRITERIA.map((c) => [c.key, score])) as Record<ScoreKey, typeof score>,
+);
 
 const schema = z.object({
   name: z.string().trim().min(1, FORM.errors.required).max(120),
@@ -25,8 +32,7 @@ const schema = z.object({
   city: z.string().max(80).optional(),
   visitedAt: z.string().optional(),
   priceLevel: z.string(),
-  ratingGabriel: ratingField,
-  ratingMilena: ratingField,
+  scores: scoresSchema,
   review: z.string().max(3000).optional(),
   wouldReturn: z.boolean(),
   logoUrl: z.string().nullable(),
@@ -47,8 +53,10 @@ function toFormValues(r?: Restaurant): FormValues {
     city: r?.city ?? '',
     visitedAt: r?.visitedAt ?? '',
     priceLevel: String(r?.priceLevel ?? 0),
-    ratingGabriel: numberToField(r?.ratingGabriel),
-    ratingMilena: numberToField(r?.ratingMilena),
+    scores: Object.fromEntries(CRITERIA.map((c) => [c.key, r?.[c.key] ?? null])) as Record<
+      ScoreKey,
+      number | null
+    >,
     review: r?.review ?? '',
     wouldReturn: r?.wouldReturn ?? true,
     logoUrl: r?.logoUrl ?? null,
@@ -66,8 +74,7 @@ function toPayload(v: FormValues): RestaurantInput {
     city: emptyToNull(v.city),
     visitedAt: emptyToNull(v.visitedAt),
     priceLevel: priceLevel > 0 ? priceLevel : null,
-    ratingGabriel: toNumberOrNull(v.ratingGabriel),
-    ratingMilena: toNumberOrNull(v.ratingMilena),
+    ...v.scores,
     review: emptyToNull(v.review),
     wouldReturn: v.wouldReturn,
     logoUrl: v.logoUrl,
@@ -95,6 +102,11 @@ export function RestaurantForm({ restaurant }: { restaurant?: Restaurant }) {
       : [...CUISINES];
 
   const location = watch('location');
+  const scores = watch('scores');
+  const filledScores = Object.values(scores).filter((v): v is number => v !== null);
+  const previewAverage = filledScores.length
+    ? Math.round((filledScores.reduce((a, b) => a + b, 0) / filledScores.length) * 10) / 10
+    : null;
   const city = watch('city');
   const [editingCity, setEditingCity] = useState(false);
   const [resolvingCity, setResolvingCity] = useState(false);
@@ -277,21 +289,30 @@ export function RestaurantForm({ restaurant }: { restaurant?: Restaurant }) {
 
       <section className="card space-y-4 p-5 sm:p-6">
         <h2 className="font-display text-lg font-semibold">{FORM.sections.ratings}</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="label" htmlFor="ratingGabriel">
-              {FORM.fields.ratingGabriel}
-            </label>
-            <input id="ratingGabriel" className="input" inputMode="decimal" {...register('ratingGabriel')} />
-            {errors.ratingGabriel && <p className="field-error">{errors.ratingGabriel.message}</p>}
-          </div>
-          <div>
-            <label className="label" htmlFor="ratingMilena">
-              {FORM.fields.ratingMilena}
-            </label>
-            <input id="ratingMilena" className="input" inputMode="decimal" {...register('ratingMilena')} />
-            {errors.ratingMilena && <p className="field-error">{errors.ratingMilena.message}</p>}
-          </div>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-muted max-w-xl text-sm">{FORM.sections.ratingsHint}</p>
+          <span className="bg-surface-2 rounded-full px-3 py-1 text-sm">
+            {FORM.fields.scoreAverage}:{' '}
+            <strong className="text-accent tabular-nums">{formatRating(previewAverage)}</strong>
+          </span>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {CRITERIA.map((c) => (
+            <Controller
+              key={c.key}
+              control={control}
+              name={`scores.${c.key}`}
+              render={({ field }) => (
+                <ScoreInput
+                  id={c.key}
+                  label={c.label}
+                  hint={c.hint}
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              )}
+            />
+          ))}
         </div>
         <div>
           <label className="label" htmlFor="review">
