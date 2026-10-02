@@ -4,7 +4,7 @@ import { useTeam } from '@/lib/use-team';
 import { InstagramLink } from './InstagramLink';
 
 export function TeamContacts() {
-  const team = useTeam();
+  const { team } = useTeam();
   const handles = (team ?? []).map((p) => p.instagram).filter((h): h is string => Boolean(h));
 
   return (

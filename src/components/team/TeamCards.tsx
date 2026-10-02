@@ -3,12 +3,13 @@
 import { ABOUT } from '@/constants/texts';
 import { useTeam } from '@/lib/use-team';
 import { UserAvatar } from '@/components/ui/UserAvatar';
-import { Loading } from '@/components/ui/States';
+import { ErrorState, Loading } from '@/components/ui/States';
 import { InstagramLink } from './InstagramLink';
 
 export function TeamCards() {
-  const team = useTeam();
+  const { team, error, reload } = useTeam();
 
+  if (error) return <ErrorState onRetry={reload} />;
   if (!team) return <Loading />;
   if (!team.length) return <p className="card text-muted p-8 text-center">{ABOUT.teamEmpty}</p>;
 

@@ -1,16 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api } from './api';
 import type { TeamMember } from './types';
 
 export function useTeam() {
   const [team, setTeam] = useState<TeamMember[] | null>(null);
-  useEffect(() => {
+  const [error, setError] = useState(false);
+
+  const load = useCallback(() => {
+    setError(false);
     api
       .team()
       .then(setTeam)
-      .catch(() => setTeam([]));
+      .catch(() => setError(true));
   }, []);
-  return team;
+
+  useEffect(load, [load]);
+  return { team, error, reload: load };
 }
