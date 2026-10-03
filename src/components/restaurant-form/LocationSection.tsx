@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { Building2, CheckCircle2, MapPin } from 'lucide-react';
 import { FORM } from '@/constants/texts';
+import { FieldError } from '@/components/form/FieldError';
 import { MAP_DEFAULT_CENTER } from '@/constants/config';
 import { reverseGeocode } from '@/lib/geocode';
 import type { GeocodeSuggestion } from '@/lib/types';
@@ -70,6 +71,7 @@ export function LocationSection() {
           />
         )}
       />
+      <FieldError message={errors.address?.message} />
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
         <span
@@ -101,11 +103,14 @@ export function LocationSection() {
             aria-label={FORM.fields.city}
             placeholder={FORM.fields.city}
             className="input !w-56 !py-1.5"
+            aria-invalid={!!errors.city}
             {...register('city')}
             onBlur={() => setEditingCity(false)}
           />
         )}
       </div>
+
+      <FieldError message={errors.city?.message ?? errors.location?.message} />
 
       <Controller
         control={control}

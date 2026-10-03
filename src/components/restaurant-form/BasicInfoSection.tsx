@@ -2,6 +2,9 @@
 
 import { Controller, useFormContext } from 'react-hook-form';
 import { CUISINES, FORM } from '@/constants/texts';
+import { LIMITS } from '@/constants/limits';
+import { CharCount } from '@/components/form/CharCount';
+import { FieldError } from '@/components/form/FieldError';
 import { ImageUpload } from '@/components/image/ImageUpload';
 import type { RestaurantFormValues } from './schema';
 
@@ -9,8 +12,10 @@ export function BasicInfoSection({ currentCuisine }: { currentCuisine?: string |
   const {
     register,
     control,
+    watch,
     formState: { errors },
   } = useFormContext<RestaurantFormValues>();
+  const description = watch('description');
 
   const cuisineOptions: string[] =
     currentCuisine && !(CUISINES as readonly string[]).includes(currentCuisine)
@@ -42,10 +47,25 @@ export function BasicInfoSection({ currentCuisine }: { currentCuisine?: string |
             <label className="label" htmlFor="name">
               {FORM.fields.name} *
             </label>
-            <input id="name" className="input" {...register('name')} />
-            {errors.name && <p className="field-error">{errors.name.message}</p>}
+            <input id="name" className="input" aria-invalid={!!errors.name} {...register('name')} />
+            <FieldError message={errors.name?.message} />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <div className="flex items-center justify-between">
+                <label className="label" htmlFor="description">
+                  {FORM.fields.description}
+                </label>
+                <CharCount length={description?.length ?? 0} max={LIMITS.restaurantDescription} />
+              </div>
+              <input
+                id="description"
+                className="input"
+                aria-invalid={!!errors.description}
+                {...register('description')}
+              />
+              <FieldError message={errors.description?.message} />
+            </div>
             <div>
               <label className="label" htmlFor="cuisine">
                 {FORM.fields.cuisine}
@@ -76,12 +96,6 @@ export function BasicInfoSection({ currentCuisine }: { currentCuisine?: string |
                 {FORM.fields.visitedAt}
               </label>
               <input id="visitedAt" type="date" className="input" {...register('visitedAt')} />
-            </div>
-            <div>
-              <label className="label" htmlFor="description">
-                {FORM.fields.description}
-              </label>
-              <input id="description" className="input" {...register('description')} />
             </div>
           </div>
         </div>

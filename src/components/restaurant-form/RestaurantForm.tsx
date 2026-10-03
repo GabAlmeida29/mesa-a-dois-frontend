@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, Save } from 'lucide-react';
 import { FORM } from '@/constants/texts';
 import { api, ApiError } from '@/lib/api';
+import { applyServerErrors } from '@/lib/form-utils';
 import type { Restaurant } from '@/lib/types';
 import { useToast } from '@/contexts/ToastContext';
 import { BasicInfoSection } from './BasicInfoSection';
@@ -32,13 +33,16 @@ export function RestaurantForm({ restaurant }: { restaurant?: Restaurant }) {
       router.push(`/restaurantes/${saved.id}`);
       router.refresh();
     } catch (e) {
-      toast(e instanceof ApiError ? e.message : FORM.errors.generic, 'error');
+      if (applyServerErrors(e, form.setError)) toast(FORM.errors.invalidForm, 'error');
+      else toast(e instanceof ApiError ? e.message : FORM.errors.generic, 'error');
     }
   }
 
+  const onInvalid = () => toast(FORM.errors.invalidForm, 'error');
+
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" noValidate>
+      <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-6" noValidate>
         <BasicInfoSection currentCuisine={restaurant?.cuisine} />
         <LocationSection />
         <RatingsSection />

@@ -2,6 +2,9 @@
 
 import { Controller, useFormContext } from 'react-hook-form';
 import { CRITERIA, FORM } from '@/constants/texts';
+import { LIMITS } from '@/constants/limits';
+import { CharCount } from '@/components/form/CharCount';
+import { FieldError } from '@/components/form/FieldError';
 import { formatRating } from '@/lib/format';
 import { ScoreInput } from './ScoreInput';
 import { WouldReturnField } from './WouldReturnField';
@@ -14,7 +17,13 @@ function average(values: Array<number | null>) {
 }
 
 export function RatingsSection() {
-  const { register, control, watch } = useFormContext<RestaurantFormValues>();
+  const {
+    register,
+    control,
+    watch,
+    formState: { errors },
+  } = useFormContext<RestaurantFormValues>();
+  const review = watch('review');
   const previewAverage = average(Object.values(watch('scores')));
 
   return (
@@ -46,16 +55,21 @@ export function RatingsSection() {
         ))}
       </div>
       <div>
-        <label className="label" htmlFor="review">
-          {FORM.fields.review}
-        </label>
+        <div className="flex items-center justify-between">
+          <label className="label" htmlFor="review">
+            {FORM.fields.review}
+          </label>
+          <CharCount length={review?.length ?? 0} max={LIMITS.review} />
+        </div>
         <textarea
           id="review"
           rows={5}
           className="input resize-y"
           placeholder={FORM.fields.reviewPlaceholder}
+          aria-invalid={!!errors.review}
           {...register('review')}
         />
+        <FieldError message={errors.review?.message} />
       </div>
       <Controller
         control={control}

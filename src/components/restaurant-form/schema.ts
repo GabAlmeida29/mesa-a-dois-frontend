@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { CRITERIA, FORM } from '@/constants/texts';
+import { LIMITS } from '@/constants/limits';
 import { emptyToNull } from '@/lib/form-utils';
 import type { Restaurant, RestaurantInput, ScoreKey } from '@/lib/types';
 
@@ -9,15 +10,15 @@ const scoresSchema = z.object(
 );
 
 export const restaurantFormSchema = z.object({
-  name: z.string().trim().min(1, FORM.errors.required).max(120),
+  name: z.string().trim().min(1).max(LIMITS.restaurantName),
   cuisine: z.string().max(60).optional(),
-  description: z.string().max(500).optional(),
-  address: z.string().max(200).optional(),
-  city: z.string().max(80).optional(),
+  description: z.string().max(LIMITS.restaurantDescription).optional(),
+  address: z.string().max(LIMITS.address).optional(),
+  city: z.string().max(LIMITS.city).optional(),
   visitedAt: z.string().optional(),
   priceLevel: z.string(),
   scores: scoresSchema,
-  review: z.string().max(3000).optional(),
+  review: z.string().max(LIMITS.review).optional(),
   wouldReturn: z.boolean(),
   logoUrl: z.string().nullable(),
   location: z

@@ -87,7 +87,7 @@ body {
   @apply btn bg-bad/15 text-bad hover:bg-bad/25;
 }
 @utility input {
-  @apply border-border bg-surface-2 text-text placeholder:text-faint focus:border-accent focus:ring-accent/25 w-full rounded-xl border px-3 py-2.5 text-sm transition outline-none focus:ring-2;
+  @apply border-border bg-surface-2 text-text placeholder:text-faint focus:border-accent focus:ring-accent/25 aria-[invalid=true]:border-bad aria-[invalid=true]:focus:ring-bad/25 w-full rounded-xl border px-3 py-2.5 text-sm transition outline-none focus:ring-2;
 }
 
 @utility select {

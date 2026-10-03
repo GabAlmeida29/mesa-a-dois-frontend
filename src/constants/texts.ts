@@ -202,7 +202,7 @@ export const FORM = {
     longitude: 'Longitude',
     dishName: 'Nome do prato',
     dishDescription: 'Descrição',
-    dishPrice: 'Preço (R$)',
+    dishPrice: 'Preço',
     dishPhoto: 'Foto do prato',
   },
   wouldReturn: {
@@ -234,6 +234,13 @@ export const FORM = {
     location: 'Defina a localização no mapa',
     price: 'Informe um valor válido',
     generic: 'Não foi possível salvar. Tente novamente.',
+    invalidForm: 'Confira os campos destacados antes de salvar.',
+    tooLong: (max: number, length: number) => `Máximo de ${max} caracteres (você usou ${length}).`,
+    tooShort: (min: number) => `Mínimo de ${min} caracteres.`,
+    maxValue: (max: string) => `O valor máximo é ${max}.`,
+    minValue: (min: string) => `O valor mínimo é ${min}.`,
+    invalid: 'Valor inválido.',
+    email: 'Informe um e-mail válido.',
   },
 } as const;
 
