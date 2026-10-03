@@ -6,7 +6,7 @@ interface PhotonFeature {
   properties: Record<string, string | undefined>;
 }
 
-export function toSuggestion(f: PhotonFeature, typedNumber?: string): GeocodeSuggestion {
+function toSuggestion(f: PhotonFeature, typedNumber?: string): GeocodeSuggestion {
   const p = f.properties;
   const street = [p.street, p.housenumber].filter(Boolean).join(', ') || null;
   const city = p.city ?? p.town ?? p.village ?? null;

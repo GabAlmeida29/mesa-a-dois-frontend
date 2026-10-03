@@ -213,3 +213,6 @@ body {
 :root[data-theme='dark'] .brand-image {
   filter: brightness(1.18) saturate(1.05);
 }
+.leaflet-container a.btn-primary {
+  color: var(--color-on-accent);
+}

@@ -97,7 +97,7 @@ web/
 │   │   ├── brand/Logo.tsx        # LogoLockup (header), LogoWordmark (rodapé) e LogoFull ("Sobre nós")
 │   │   ├── dish/                 # DishCard e DishForm
 │   │   ├── image/                # ImageUpload e ImageCropper (recorte quadrado antes do envio)
-│   │   ├── layout/               # Header, Footer, UserMenu, ThemeSwitcher e menu-links.ts (itens do menu por permissão)
+│   │   ├── layout/               # Header, Footer, AccountMenu (tema + entrar/conta), ThemeSwitcher e menu-links.ts
 │   │   ├── restaurant/           # RestaurantCard, RestaurantThumbnail, RestaurantFilters, RatingBadge, RatingSummary
 │   │   ├── restaurant-form/      # RestaurantForm, schema.ts, BasicInfoSection, LocationSection, RatingsSection,
 │   │   │                         # WouldReturnField, ScoreInput e AddressAutocomplete
@@ -298,6 +298,13 @@ Todo envio de imagem passa pelo `ImageUpload` (`components/image/`): foto do res
 
 ---
 
+## Validação de formulários
+
+- Mensagens em português para todos os campos (`lib/zod-pt.ts`), exibidas embaixo do campo com `FieldError`; o campo fica com a borda vermelha (`aria-invalid`).
+- Textos longos mostram contador (`CharCount`, ex.: `520/500`) com os limites centralizados em `constants/limits.ts`.
+- Ao salvar com erro, nada é enviado: aparece o aviso “Confira os campos destacados” e o foco vai para o primeiro campo inválido. Erros devolvidos pela API também são exibidos no campo certo (`applyServerErrors`).
+- Preço do prato usa `MoneyInput`: “R$” fixo e máscara `0,00` (digitar `123456` vira `1.234,56`).
+
 ## Busca, filtros e ordenação
 
 Na página `/restaurantes`:
@@ -360,7 +367,7 @@ Filtros: período de **7, 30, 90 dias ou 12 meses** e "Incluir nossos acessos" (
   | `gold`                         | preços                                      | `#e3a24f`             | `#b9772b`             |
   | `good` / `bad`                 | notas altas/baixas, sucesso/erro            | `#4fd18b` / `#f2545b` | `#3b8f63` / `#c44a4f` |
 
-- **Troca de tema** (`ThemeSwitcher`, no header e no menu do celular): Sistema, Claro ou Escuro.
+- **Troca de tema** (`ThemeSwitcher`): fica dentro do menu do canto superior direito (`AccountMenu`), junto com **Entrar** para visitantes ou com os atalhos da conta para quem está logado. No celular, o mesmo conteúdo aparece no menu hambúrguer. Opções: Sistema, Claro ou Escuro.
   - a preferência fica em `localStorage` (`mesa-theme`); "Sistema" segue o `prefers-color-scheme` e acompanha mudanças ao vivo;
   - um script inline em `lib/theme.ts` roda antes da página pintar e aplica `data-theme` no `<html>`, evitando o "flash" do tema errado;
   - o `ThemeContext` também atualiza o `theme-color` do navegador.

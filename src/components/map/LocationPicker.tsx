@@ -8,7 +8,7 @@ import { MAP_DEFAULT_CENTER, MAP_DEFAULT_ZOOM } from '@/constants/config';
 import { BaseTiles } from './BaseTiles';
 import { pickerIcon } from './leaflet-utils';
 
-export interface LatLng {
+interface LatLng {
   lat: number;
   lng: number;
 }

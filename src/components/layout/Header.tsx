@@ -4,16 +4,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import clsx from 'clsx';
-import { LogIn, LogOut, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { APP, NAV } from '@/constants/texts';
-import { useAuth } from '@/contexts/AuthContext';
-import { UserAvatar } from '@/components/ui/UserAvatar';
-import { UserMenu } from './UserMenu';
 import { LogoLockup } from '@/components/brand/Logo';
-import { useMenuLinks } from './menu-links';
-import { ThemeSwitcher } from './ThemeSwitcher';
+import { AccountMenu } from './AccountMenu';
+import { AccountMenuContent } from './AccountMenuContent';
 
-const links = [
+const NAV_LINKS = [
   { href: '/', label: NAV.map },
   { href: '/restaurantes', label: NAV.restaurants },
   { href: '/sobre', label: NAV.about },
@@ -21,21 +18,19 @@ const links = [
 
 export function Header() {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
-  const menuLinks = useMenuLinks();
-
+  const close = () => setOpen(false);
   const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 
   return (
     <header className="border-border/70 bg-bg/80 sticky top-0 z-[1000] border-b backdrop-blur-lg">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href="/" className="shrink-0" onClick={() => setOpen(false)} aria-label={APP.name}>
+        <Link href="/" className="shrink-0" onClick={close} aria-label={APP.name}>
           <LogoLockup />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
-          {links.map((l) => (
+          {NAV_LINKS.map((l) => (
             <Link
               key={l.href}
               href={l.href}
@@ -49,19 +44,12 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
-          <ThemeSwitcher />
-          {user ? (
-            <UserMenu user={user} onLogout={logout} />
-          ) : (
-            <Link href="/login" className="btn-ghost">
-              <LogIn className="size-4" /> {NAV.login}
-            </Link>
-          )}
+        <div className="hidden md:block">
+          <AccountMenu />
         </div>
 
         <button
-          className="btn-ghost md:hidden"
+          className="btn-ghost !p-2.5 md:hidden"
           onClick={() => setOpen((o) => !o)}
           aria-label={open ? NAV.closeMenu : NAV.openMenu}
           aria-expanded={open}
@@ -71,13 +59,13 @@ export function Header() {
       </div>
 
       {open && (
-        <div className="border-border bg-bg border-t px-4 py-4 md:hidden">
-          <nav className="flex flex-col gap-1">
-            {links.map((l) => (
+        <div className="border-border bg-bg border-t md:hidden">
+          <nav className="flex flex-col gap-1 px-4 pt-4">
+            {NAV_LINKS.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
-                onClick={() => setOpen(false)}
+                onClick={close}
                 className={clsx(
                   'rounded-xl px-4 py-3',
                   isActive(l.href) ? 'bg-surface-2 text-text' : 'text-muted',
@@ -87,42 +75,8 @@ export function Header() {
               </Link>
             ))}
           </nav>
-          <div className="mt-4 flex flex-col gap-2">
-            <ThemeSwitcher showLabels />
-            {user ? (
-              <>
-                <div className="bg-surface mb-2 flex items-center gap-3 rounded-xl px-4 py-3">
-                  <UserAvatar name={user.name} src={user.avatarUrl} size={40} />
-                  <div className="min-w-0">
-                    <p className="truncate font-medium">{user.name}</p>
-                    <p className="text-faint truncate text-xs">{user.email}</p>
-                  </div>
-                </div>
-                {menuLinks.map(({ href, label, icon: Icon }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    className={href === '/restaurantes/novo' ? 'btn-primary' : 'btn-ghost'}
-                    onClick={() => setOpen(false)}
-                  >
-                    <Icon className="size-4" /> {label}
-                  </Link>
-                ))}
-                <button
-                  className="btn-ghost"
-                  onClick={() => {
-                    logout();
-                    setOpen(false);
-                  }}
-                >
-                  <LogOut className="size-4" /> {NAV.logout}
-                </button>
-              </>
-            ) : (
-              <Link href="/login" className="btn-ghost" onClick={() => setOpen(false)}>
-                <LogIn className="size-4" /> {NAV.login}
-              </Link>
-            )}
+          <div className="border-border bg-surface mx-4 my-4 overflow-hidden rounded-2xl border">
+            <AccountMenuContent onNavigate={close} />
           </div>
         </div>
       )}

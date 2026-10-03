@@ -123,7 +123,7 @@ export function DishForm({ restaurantId, dish, onSaved, onCancel }: Props) {
         />
         <FieldError message={errors.description?.message} />
       </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-3">
         <div>
           <label className="label" htmlFor="dish-price">
             {FORM.fields.dishPrice}
@@ -150,8 +150,9 @@ export function DishForm({ restaurantId, dish, onSaved, onCancel }: Props) {
           </label>
           <input
             id="dish-rg"
-            className="input"
+            className="input text-center tabular-nums"
             inputMode="decimal"
+            placeholder={FORM.fields.ratingPlaceholder}
             aria-invalid={!!errors.ratingGabriel}
             {...register('ratingGabriel')}
           />
@@ -163,8 +164,9 @@ export function DishForm({ restaurantId, dish, onSaved, onCancel }: Props) {
           </label>
           <input
             id="dish-rm"
-            className="input"
+            className="input text-center tabular-nums"
             inputMode="decimal"
+            placeholder={FORM.fields.ratingPlaceholder}
             aria-invalid={!!errors.ratingMilena}
             {...register('ratingMilena')}
           />
