@@ -12,7 +12,7 @@ export function StatCard({
   hint?: string;
 }) {
   return (
-    <div className="card p-4 sm:p-5">
+    <div className="card min-w-0 p-4 sm:p-5">
       <p className="text-muted flex items-center gap-2 text-sm">
         <Icon className="text-accent size-4" /> {label}
       </p>

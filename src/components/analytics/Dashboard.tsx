@@ -41,7 +41,7 @@ export function Dashboard({
         <DailyBars daily={data.daily} />
       </Panel>
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Panel title={T.pagesTitle}>
           <RankedBars
             rows={data.pages.map((p) => ({
@@ -66,13 +66,13 @@ export function Dashboard({
         </Panel>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <Panel title={T.mapTitle} subtitle={T.geoCredit}>
           <div className="border-border h-80 overflow-hidden rounded-xl border">
             <VisitorsMap cities={data.cities} />
           </div>
         </Panel>
-        <div className="grid gap-5">
+        <div className="grid grid-cols-1 gap-5">
           <Panel title={T.countriesTitle}>
             <RankedBars
               rows={data.countries.map((c) => ({
@@ -97,7 +97,7 @@ export function Dashboard({
         </div>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
         <Panel title={T.devicesTitle}>
           <RankedBars
             rows={data.devices.map((d) => ({
@@ -132,9 +132,14 @@ export function Dashboard({
       <Panel title={T.recentTitle}>
         <ul className="divide-border divide-y text-sm">
           {data.recent.map((e, i) => (
-            <li key={`${e.occurredAt}-${i}`} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2.5">
-              <span className="text-faint w-28 shrink-0 tabular-nums">{formatDateTime(e.occurredAt)}</span>
-              <span className="min-w-0 flex-1">
+            <li
+              key={`${e.occurredAt}-${i}`}
+              className="flex flex-col gap-0.5 py-2.5 sm:flex-row sm:items-center sm:gap-3"
+            >
+              <span className="text-faint shrink-0 text-xs tabular-nums sm:w-28 sm:text-sm">
+                {formatDateTime(e.occurredAt)}
+              </span>
+              <span className="min-w-0 flex-1 [overflow-wrap:anywhere]">
                 <span className="text-muted">{e.type === 'click' ? T.click : T.pageview} </span>
                 <span className="font-medium">{e.type === 'click' ? e.target : pageLabel(e.path)}</span>
                 {e.type === 'click' && <span className="text-faint"> · {pageLabel(e.path)}</span>}
